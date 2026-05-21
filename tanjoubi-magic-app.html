@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Birthday Oracle">
+<meta name="theme-color" content="#0a0800">
+<link rel="manifest" id="pwa-manifest">
+<link rel="apple-touch-icon" id="pwa-icon">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>誕生日あて</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Noto+Serif+JP:wght@300;400;700&display=swap');
+
+:root{
+  --gold:#d4a843;
+  --gold-light:#f5c842;
+  --gold-dim:#7a5a18;
+  --sand:#e8c87a;
+  --sand-pale:#f0dfa0;
+  --bg-deep:#0a0800;
+  --bg-mid:#120e02;
+  --bg-card:#1a1402;
+  --text:#e8d89a;
+  --text-dim:#8a7840;
+  --accent:#c87820;
+  --purple:#4a1a00;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  background:var(--bg-deep);
+  color:var(--text);
+  font-family:'Noto Serif JP',serif;
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+}
+
+/* 砂漠の星空 */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(212,168,67,.08) 0%, transparent 60%),
+    radial-gradient(1px 1px at 8% 12%,rgba(255,240,180,.9) 0%,transparent 100%),
+    radial-gradient(1px 1px at 18% 35%,rgba(255,240,180,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 28% 8%, rgba(255,240,180,.8) 0%,transparent 100%),
+    radial-gradient(1px 1px at 38% 22%,rgba(255,240,180,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 48% 5%, rgba(255,240,180,.9) 0%,transparent 100%),
+    radial-gradient(1px 1px at 58% 18%,rgba(255,240,180,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 68% 30%,rgba(255,240,180,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 78% 10%,rgba(255,240,180,.8) 0%,transparent 100%),
+    radial-gradient(1px 1px at 88% 25%,rgba(255,240,180,.5) 0%,transparent 100%),
+    radial-gradient(2px 2px at 22% 55%,rgba(255,220,100,.4) 0%,transparent 100%),
+    radial-gradient(2px 2px at 62% 65%,rgba(255,220,100,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 42% 75%,rgba(255,240,180,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 82% 80%,rgba(255,240,180,.5) 0%,transparent 100%);
+}
+
+/* 下部の砂地グラデ */
+body::after{
+  content:'';position:fixed;bottom:0;left:0;right:0;height:120px;pointer-events:none;z-index:0;
+  background:linear-gradient(to top, rgba(30,20,0,.6) 0%, transparent 100%);
+}
+
+.container{position:relative;z-index:1;max-width:580px;margin:0 auto;padding:52px 24px 72px;}
+
+/* ── HEADER ── */
+.header{text-align:center;margin-bottom:44px;}
+
+.magic-eye{width:80px;height:80px;margin:0 auto 22px;}
+.magic-eye svg{width:100%;height:100%;animation:eyePulse 3s ease-in-out infinite;}
+@keyframes eyePulse{
+  0%,100%{filter:drop-shadow(0 0 10px var(--gold)) drop-shadow(0 0 20px rgba(212,168,67,.4));transform:scale(1);}
+  50%{filter:drop-shadow(0 0 20px var(--gold-light)) drop-shadow(0 0 40px rgba(212,168,67,.6));transform:scale(1.1);}
+}
+
+.title{
+  font-family:'Cinzel Decorative',cursive;
+  font-size:clamp(1.6rem,6vw,2.4rem);font-weight:900;
+  background:linear-gradient(135deg,#7a5a18 0%,#f5c842 30%,#d4a843 55%,#f5c842 75%,#7a5a18 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  letter-spacing:.08em;line-height:1.2;margin-bottom:8px;
+  text-shadow:none;
+}
+
+.subtitle{font-size:.8rem;color:var(--text-dim);letter-spacing:.4em;}
+
+/* ── DIVIDER ── */
+.divider{display:flex;align-items:center;gap:12px;margin:24px 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);}
+.gem{width:8px;height:8px;background:var(--gold);transform:rotate(45deg);box-shadow:0 0 12px var(--gold);}
+
+/* ── INSTRUCTION ── */
+.instr{
+  background:linear-gradient(135deg,#150f00 0%,#1e1600 100%);
+  border:1px solid rgba(212,168,67,.25);border-radius:3px;
+  padding:26px 28px;margin-bottom:30px;position:relative;overflow:hidden;
+}
+.instr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.instr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);}
+
+/* 四隅装飾 */
+.instr-corner{position:absolute;width:12px;height:12px;border-color:var(--gold-dim);border-style:solid;opacity:.7;}
+.instr-corner.tl{top:6px;left:6px;border-width:1px 0 0 1px;}
+.instr-corner.tr{top:6px;right:6px;border-width:1px 1px 0 0;}
+.instr-corner.bl{bottom:6px;left:6px;border-width:0 0 1px 1px;}
+.instr-corner.br{bottom:6px;right:6px;border-width:0 1px 1px 0;}
+
+.instr-title{font-size:.65rem;letter-spacing:.5em;color:var(--gold);margin-bottom:18px;text-align:center;}
+.steps{display:flex;flex-direction:column;gap:14px;}
+.step{display:flex;gap:14px;align-items:flex-start;}
+.sn{
+  min-width:26px;height:26px;border:1px solid var(--gold-dim);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.68rem;color:var(--gold);font-family:'Cinzel Decorative',cursive;
+  flex-shrink:0;margin-top:2px;background:rgba(212,168,67,.08);
+}
+.st{font-size:.88rem;line-height:1.8;}
+.hl{color:var(--gold-light);font-weight:700;}
+.dim{color:var(--text-dim);font-size:.8rem;}
+
+/* ── INPUT ── */
+.ilabel{display:block;font-size:.65rem;letter-spacing:.45em;color:var(--gold);margin-bottom:12px;text-align:center;}
+
+.minput{
+  width:100%;
+  background:rgba(0,0,0,.7);
+  border:2px solid rgba(212,168,67,.4);
+  border-radius:3px;
+  padding:20px 20px;
+  font-size:2rem;
+  color:var(--gold-light);
+  font-family:'Cinzel Decorative',cursive;
+  letter-spacing:.18em;
+  text-align:center;
+  outline:none;
+  transition:all .4s;
+  box-shadow:0 0 20px rgba(212,168,67,.15),inset 0 0 30px rgba(0,0,0,.8);
+}
+.minput:focus{
+  border-color:var(--gold);
+  background:rgba(0,0,0,.85);
+  box-shadow:0 0 40px rgba(212,168,67,.4),0 0 80px rgba(212,168,67,.1),inset 0 0 30px rgba(0,0,0,.9);
+  color:var(--gold-light);
+  letter-spacing:.25em;
+}
+.minput::placeholder{color:rgba(212,168,67,.3);font-size:.9rem;letter-spacing:.1em;}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
+input[type=number]{-moz-appearance:textfield;}
+
+/* ── BUTTON ── */
+.rbtn{
+  width:100%;padding:18px;margin-top:16px;
+  background:linear-gradient(135deg,#0a0800 0%,#2a1a00 40%,#1a1000 100%);
+  border:2px solid rgba(212,168,67,.5);border-radius:3px;
+  color:var(--gold-light);
+  font-family:'Cinzel Decorative',cursive;
+  font-size:.95rem;letter-spacing:.28em;cursor:pointer;
+  position:relative;overflow:hidden;transition:all .3s;
+  box-shadow:0 0 20px rgba(212,168,67,.2);
+  text-shadow:0 0 12px rgba(212,168,67,.6);
+}
+.rbtn::before{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(212,168,67,.2),transparent);
+  transition:left .6s;
+}
+.rbtn:hover::before{left:100%;}
+.rbtn:hover{
+  border-color:var(--gold-light);
+  box-shadow:0 0 40px rgba(212,168,67,.5),0 0 80px rgba(212,168,67,.2);
+  transform:translateY(-2px);
+  color:#fff;
+}
+.rbtn:active{transform:translateY(0);}
+
+/* ── RESULT ── */
+.rarea{margin-top:32px;display:none;}
+.rarea.show{display:block;animation:fadeUp .6s ease forwards;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+.bcard{
+  background:linear-gradient(135deg,#120e02 0%,#0e1010 100%);
+  border:1px solid rgba(212,168,67,.3);border-radius:3px;
+  padding:28px;margin-bottom:16px;position:relative;overflow:hidden;
+}
+.bcard::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(212,168,67,.07) 0%,transparent 60%);
+}
+/* 四隅 */
+.bcard::after{content:'';position:absolute;top:8px;right:8px;width:10px;height:10px;border-top:1px solid var(--gold-dim);border-right:1px solid var(--gold-dim);}
+
+.cnum{font-size:.6rem;letter-spacing:.45em;color:var(--text-dim);margin-bottom:18px;}
+.crow{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid rgba(212,168,67,.12);
+}
+.crow:last-of-type{padding-bottom:0;margin-bottom:0;border-bottom:none;}
+.cl{font-size:.72rem;color:var(--text-dim);letter-spacing:.15em;}
+.cv{font-size:1.05rem;color:var(--sand);font-weight:700;}
+.cv.big{
+  font-family:'Cinzel Decorative',cursive;font-size:1.5rem;
+  color:var(--gold-light);text-shadow:0 0 20px rgba(212,168,67,.5);
+}
+
+.egrid{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;
+  background:rgba(212,168,67,.15);border-top:1px solid rgba(212,168,67,.15);margin-top:6px;
+}
+.ecell{background:rgba(0,0,0,.3);padding:14px 8px;text-align:center;}
+.ecell .cl{display:block;margin-bottom:6px;}
+.ecell .cv{font-size:1rem;}
+.zsym{font-size:1.6rem;display:block;line-height:1;margin-bottom:3px;}
+.dnum{font-family:'Cinzel Decorative',cursive;font-size:1rem;color:var(--gold-light);}
+.csub{font-size:.62rem;color:var(--text-dim);margin-top:3px;}
+
+.fnote{font-size:.7rem;color:var(--text-dim);text-align:center;margin:8px 0 14px;font-style:italic;}
+.rcount{font-size:.7rem;color:var(--text-dim);text-align:center;margin-bottom:14px;letter-spacing:.15em;}
+.errmsg{background:rgba(140,30,0,.2);border:1px solid rgba(200,80,0,.4);border-radius:3px;padding:16px;font-size:.88rem;color:#f4a060;text-align:center;}
+.nores{text-align:center;padding:22px;color:var(--text-dim);font-size:.88rem;}
+.rstbtn{
+  background:none;border:1px solid rgba(212,168,67,.25);border-radius:3px;
+  color:var(--text-dim);font-family:'Noto Serif JP',serif;font-size:.8rem;
+  padding:10px 24px;cursor:pointer;display:block;margin:16px auto 0;letter-spacing:.12em;transition:all .2s;
+}
+.rstbtn:hover{color:var(--gold);border-color:var(--gold-dim);}
+
+/* sparkle */
+.sparkles{position:fixed;inset:0;pointer-events:none;z-index:100;display:none;}
+.sparkle{position:absolute;background:var(--gold-light);border-radius:50%;animation:spk 1.3s ease-out forwards;}
+@keyframes spk{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0);}}
+</style>
+</head>
+<body>
+<div id="sparkles" class="sparkles"></div>
+<div class="container">
+  <div class="header">
+    <div class="magic-eye">
+      <svg viewBox="0 0 80 80" fill="none">
+        <!-- ホルスの目 -->
+        <ellipse cx="40" cy="38" rx="32" ry="18" stroke="#d4a843" stroke-width="2"/>
+        <!-- 下のエジプト装飾線 -->
+        <path d="M8 38 Q40 58 72 38" stroke="#d4a843" stroke-width="1.5" fill="none" opacity=".5"/>
+        <!-- 右下の装飾 -->
+        <path d="M60 48 L68 62 L62 62" stroke="#d4a843" stroke-width="1.5" fill="none" opacity=".7"/>
+        <path d="M62 62 L58 72" stroke="#d4a843" stroke-width="1.5" opacity=".7"/>
+        <!-- 瞳 -->
+        <circle cx="40" cy="38" r="11" fill="#1a0800" stroke="#d4a843" stroke-width="1.5"/>
+        <circle cx="40" cy="38" r="6" fill="#d4a843" opacity=".95"/>
+        <circle cx="43" cy="35" r="2.5" fill="white" opacity=".7"/>
+        <circle cx="40" cy="38" r="2" fill="#0a0400"/>
+        <!-- 上のまつげ -->
+        <line x1="20" y1="28" x2="15" y2="20" stroke="#d4a843" stroke-width="1.5" opacity=".6"/>
+        <line x1="30" y1="22" x2="27" y2="14" stroke="#d4a843" stroke-width="1.5" opacity=".6"/>
+        <line x1="40" y1="20" x2="40" y2="12" stroke="#d4a843" stroke-width="1.5" opacity=".6"/>
+        <line x1="50" y1="22" x2="53" y2="14" stroke="#d4a843" stroke-width="1.5" opacity=".6"/>
+        <line x1="60" y1="28" x2="65" y2="20" stroke="#d4a843" stroke-width="1.5" opacity=".6"/>
+      </svg>
+    </div>
+    <div class="title">&#9775; Birthday Oracle &#9775;</div>
+    <div class="subtitle">―― 誕生日解読の神比術 ――</div>
+  </div>
+  <div class="instr">
+    <div class="instr-corner tl"></div><div class="instr-corner tr"></div><div class="instr-corner bl"></div><div class="instr-corner br"></div><div class="instr-title">✦ 手順 ✦</div>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st">相手のスマホで電卓を立ち上げてもらい、<span class="hl">生まれた西暦</span>を入力してもらう<br><span class="dim">（例: 1991年 → 1991）</span></div></div>
+      <div class="step"><div class="sn">2</div><div class="st">その数字に<span class="hl">×（かける）</span>を押してもらい、<span class="hl">誕生日を4桁</span>で入力してもらう<br><span class="dim">（6月23日 → 0623）</span></div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><span class="hl">＝</span>を押してもらい、出た数字を言ってもらう</div></div>
+    </div>
+  </div>
+  <div class="divider"><div class="gem"></div></div>
+  <div style="margin-bottom:18px">
+    <div style="font-size:.85rem;letter-spacing:.2em;color:var(--gold);text-align:center;margin-bottom:12px;font-weight:700">✦ 言ってもらった数字を入力 ✦</div>
+    <input type="number" id="binput" class="minput" placeholder="例: 1240393" inputmode="numeric">
+  </div>
+  <button class="rbtn" onclick="revealBirthday()">✦ 誕生日を当てる ✦</button>
+  <div class="rarea" id="bres"></div>
+</div>
+<script>
+var FAMOUS=
+{"1-1":[{"name":"福澤諭吉","desc":"思想家・教育者","icon":"📚"},{"name":"エルヴィス・プレスリー（別日）","desc":"ロックの王様","icon":"🎸"},{"name":"ヴィダル・サスーン","desc":"ヘアスタイリスト","icon":"✂️"}],"1-2":[{"name":"アイザック・アシモフ","desc":"SF作家","icon":"🚀"},{"name":"緒形拳","desc":"俳優","icon":"🎭"},{"name":"徳川家康","desc":"江戸幕府初代将軍","icon":"⚔️"}],"1-3":[{"name":"J・R・R・トールキン","desc":"「指輪物語」作者","icon":"📖"},{"name":"メル・ギブソン","desc":"俳優・映画監督","icon":"🎬"},{"name":"西田敏行","desc":"俳優","icon":"🎭"}],"1-4":[{"name":"アイザック・ニュートン","desc":"物理学者・万有引力発見","icon":"🍎"},{"name":"ルイ・ブライユ","desc":"点字の発明者","icon":"✨"},{"name":"松田聖子","desc":"歌手","icon":"🎵"}],"1-5":[{"name":"ウンベルト・エーコ","desc":"小説家「薔薇の名前」","icon":"📚"},{"name":"ブラッドリー・クーパー","desc":"俳優","icon":"🎬"},{"name":"中居正広","desc":"タレント・元SMAP","icon":"🎤"}],"1-6":[{"name":"ジョーン・オブ・アーク","desc":"フランスの英雄","icon":"⚔️"},{"name":"ローワン・アトキンソン","desc":"ミスタービーン","icon":"😄"},{"name":"小泉純一郎","desc":"元内閣総理大臣","icon":"🏛️"}],"1-7":[{"name":"ニコラ・テスラ","desc":"発明家・電気工学者","icon":"⚡"},{"name":"ニコラス・ケイジ","desc":"俳優","icon":"🎬"},{"name":"和田アキ子","desc":"歌手・タレント","icon":"🎵"}],"1-8":[{"name":"エルヴィス・プレスリー","desc":"ロックの王様","icon":"🎸"},{"name":"スティーヴン・ホーキング","desc":"理論物理学者","icon":"🌌"},{"name":"内田裕也","desc":"ロックミュージシャン","icon":"🎸"}],"1-9":[{"name":"シモーヌ・ド・ボーヴォワール","desc":"哲学者・作家","icon":"📖"},{"name":"ケイト・ミドルトン","desc":"イギリス王妃","icon":"👑"},{"name":"堂本剛","desc":"歌手・KinKi Kids","icon":"🎵"}],"1-10":[{"name":"ロッド・スチュワート","desc":"ロック歌手","icon":"🎸"},{"name":"さだまさし","desc":"シンガーソングライター","icon":"🎵"},{"name":"松田翔太","desc":"俳優","icon":"🎭"}],"1-11":[{"name":"アレクサンダー・ハミルトン","desc":"アメリカ建国の父","icon":"🏛️"},{"name":"メアリー・J・ブライジ","desc":"R&B歌手","icon":"🎤"},{"name":"江川卓","desc":"元プロ野球選手","icon":"⚾"}],"1-12":[{"name":"ジャック・ロンドン","desc":"小説家「荒野の呼び声」","icon":"📖"},{"name":"ジェフ・ベゾス","desc":"Amazon創業者","icon":"📦"},{"name":"高田純次","desc":"タレント","icon":"😄"}],"1-13":[{"name":"オーランド・ブルーム","desc":"俳優","icon":"🎬"},{"name":"坂本龍馬","desc":"幕末の志士","icon":"⚔️"},{"name":"上戸彩","desc":"女優","icon":"🎭"}],"1-14":[{"name":"アルバート・シュバイツァー","desc":"医師・ノーベル平和賞","icon":"🏥"},{"name":"LL・クール・J","desc":"ラッパー","icon":"🎤"},{"name":"市川猿之助","desc":"歌舞伎俳優","icon":"🎭"}],"1-15":[{"name":"マーティン・ルーサー・キング","desc":"公民権運動指導者","icon":"✊"},{"name":"モハメド・アリ","desc":"プロボクサー","icon":"🥊"},{"name":"石原慎太郎","desc":"作家・元東京都知事","icon":"📖"}],"1-16":[{"name":"ケイト・モス","desc":"スーパーモデル","icon":"💄"},{"name":"松任谷由実","desc":"シンガーソングライター","icon":"🎵"},{"name":"中山美穂","desc":"女優・歌手","icon":"🎵"}],"1-17":[{"name":"ベンジャミン・フランクリン","desc":"政治家・発明家","icon":"⚡"},{"name":"ジム・キャリー","desc":"俳優・コメディアン","icon":"😄"},{"name":"北野武","desc":"映画監督・タレント","icon":"🎬"}],"1-18":[{"name":"ケビン・コスナー","desc":"俳優・映画監督","icon":"🎬"},{"name":"A・A・ミルン","desc":"「くまのプーさん」作者","icon":"🐻"},{"name":"稲垣吾郎","desc":"俳優・元SMAP","icon":"🎭"}],"1-19":[{"name":"エドガー・アラン・ポー","desc":"小説家・詩人","icon":"🖤"},{"name":"ジャニス・ジョプリン","desc":"ロック歌手","icon":"🎸"},{"name":"松岡修造","desc":"元テニス選手・タレント","icon":"🎾"}],"1-20":[{"name":"バラク・オバマ","desc":"第44代アメリカ大統領","icon":"🏛️"},{"name":"バズ・オルドリン","desc":"宇宙飛行士・月面着陸","icon":"🌙"},{"name":"内村光良","desc":"お笑い芸人","icon":"😄"}],"1-21":[{"name":"クリスチャン・ディオール","desc":"ファッションデザイナー","icon":"👗"},{"name":"大竹しのぶ","desc":"女優","icon":"🎭"},{"name":"稲葉浩志","desc":"歌手・B'z","icon":"🎸"}],"1-22":[{"name":"フランシス・ベーコン","desc":"哲学者・科学者","icon":"🔬"},{"name":"稲葉浩志","desc":"歌手・B'z","icon":"🎸"},{"name":"森田剛","desc":"俳優","icon":"🎭"}],"1-23":[{"name":"スタンダール","desc":"フランスの小説家","icon":"📖"},{"name":"中田英寿","desc":"元サッカー選手","icon":"⚽"},{"name":"木村文乃","desc":"女優","icon":"🎭"}],"1-24":[{"name":"ニール・ダイアモンド","desc":"シンガーソングライター","icon":"🎵"},{"name":"宇多田ヒカル","desc":"シンガーソングライター","icon":"🎵"},{"name":"江口洋介","desc":"俳優","icon":"🎭"}],"1-25":[{"name":"アリシア・キーズ","desc":"シンガーソングライター","icon":"🎹"},{"name":"宇多田ヒカル","desc":"シンガーソングライター","icon":"🎵"},{"name":"福山雅治","desc":"ミュージシャン・俳優","icon":"🎸"}],"1-26":[{"name":"ポール・ニューマン","desc":"俳優","icon":"🎬"},{"name":"エレン・デジェネレス","desc":"テレビ司会者","icon":"😄"},{"name":"福山雅治","desc":"ミュージシャン・俳優","icon":"🎸"}],"1-27":[{"name":"モーツァルト","desc":"作曲家・音楽の神童","icon":"🎼"},{"name":"ルイス・キャロル","desc":"「不思議の国のアリス」作者","icon":"🐇"},{"name":"橋本環奈","desc":"女優・アイドル","icon":"⭐"}],"1-28":[{"name":"ジャクソン・ポロック","desc":"画家・抽象表現主義","icon":"🎨"},{"name":"木村拓哉","desc":"俳優・歌手・元SMAP","icon":"⭐"},{"name":"近藤真彦","desc":"歌手・俳優","icon":"🎵"}],"1-29":[{"name":"アントン・チェーホフ","desc":"劇作家・小説家","icon":"📖"},{"name":"トム・セレック","desc":"俳優","icon":"🎬"},{"name":"田村正和","desc":"俳優","icon":"🎭"}],"1-30":[{"name":"フランクリン・D・ルーズベルト","desc":"第32代アメリカ大統領","icon":"🏛️"},{"name":"田村正和","desc":"俳優","icon":"🎭"},{"name":"浜田岳","desc":"俳優","icon":"🎭"}],"1-31":[{"name":"フランツ・シューベルト","desc":"作曲家","icon":"🎼"},{"name":"ジャスティン・ティンバーレイク","desc":"歌手・俳優","icon":"🎤"},{"name":"松本人志","desc":"お笑い芸人・ダウンタウン","icon":"😄"}],"2-1":[{"name":"クラーク・ゲーブル","desc":"俳優「風と共に去りぬ」","icon":"🎬"},{"name":"ボリス・エリツィン","desc":"初代ロシア大統領","icon":"🏛️"},{"name":"氷川きよし","desc":"演歌歌手","icon":"🎵"}],"2-2":[{"name":"シャキラ","desc":"コロンビアの歌手","icon":"🎤"},{"name":"高嶋政伸","desc":"俳優","icon":"🎭"},{"name":"坂本昌行","desc":"俳優・V6","icon":"🎭"}],"2-3":[{"name":"メンデルスゾーン","desc":"作曲家","icon":"🎼"},{"name":"高倉健","desc":"俳優","icon":"🎬"},{"name":"ノーマン・ロックウェル","desc":"画家","icon":"🎨"}],"2-4":[{"name":"チャールズ・リンドバーグ","desc":"大西洋横断飛行に成功","icon":"✈️"},{"name":"ローザ・パークス","desc":"公民権運動の象徴","icon":"✊"},{"name":"羽生結弦","desc":"フィギュアスケート選手","icon":"⛸️"}],"2-5":[{"name":"ボブ・マーリー","desc":"レゲエミュージシャン","icon":"🎸"},{"name":"長嶋茂雄","desc":"元プロ野球選手","icon":"⚾"},{"name":"クリストファー・コロンブス","desc":"航海士","icon":"🚢"}],"2-6":[{"name":"ロナルド・レーガン","desc":"第40代アメリカ大統領","icon":"🏛️"},{"name":"ボブ・マーリー","desc":"レゲエの神様","icon":"🎵"},{"name":"松井秀喜","desc":"元プロ野球選手","icon":"⚾"}],"2-7":[{"name":"チャールズ・ディケンズ","desc":"小説家","icon":"📖"},{"name":"アシュトン・カッチャー","desc":"俳優","icon":"🎬"},{"name":"北島康介","desc":"水泳選手・金メダリスト","icon":"🏊"}],"2-8":[{"name":"ジュール・ヴェルヌ","desc":"SF小説家「海底二万里」","icon":"🚀"},{"name":"ジョン・ウィリアムズ","desc":"映画音楽作曲家","icon":"🎼"},{"name":"渡辺謙","desc":"俳優","icon":"🎬"}],"2-9":[{"name":"ジョー・ペシ","desc":"俳優","icon":"🎬"},{"name":"有吉弘行","desc":"お笑い芸人","icon":"😄"},{"name":"大野智","desc":"歌手・嵐","icon":"⭐"}],"2-10":[{"name":"大野智","desc":"歌手・嵐","icon":"⭐"},{"name":"ジョージ・バーナード・ショー","desc":"劇作家・ノーベル文学賞","icon":"📖"},{"name":"今田耕司","desc":"お笑い芸人","icon":"😄"}],"2-11":[{"name":"トーマス・エジソン","desc":"発明家・電球を発明","icon":"💡"},{"name":"バート・レイノルズ","desc":"俳優","icon":"🎬"},{"name":"西島秀俊","desc":"俳優","icon":"🎭"}],"2-12":[{"name":"エイブラハム・リンカーン","desc":"第16代アメリカ大統領","icon":"🏛️"},{"name":"チャールズ・ダーウィン","desc":"進化論を提唱","icon":"🧬"},{"name":"川口春奈","desc":"女優","icon":"🎭"}],"2-13":[{"name":"ワーグナー","desc":"作曲家","icon":"🎼"},{"name":"田中将大","desc":"プロ野球選手","icon":"⚾"},{"name":"チャック・イェーガー","desc":"初の音速突破パイロット","icon":"✈️"}],"2-14":[{"name":"バレンタインデー","desc":"愛の守護聖人","icon":"💝"},{"name":"マット・ディロン","desc":"俳優","icon":"🎬"},{"name":"高橋一生","desc":"俳優","icon":"🎭"}],"2-15":[{"name":"ガリレオ・ガリレイ","desc":"天文学者・物理学者","icon":"🔭"},{"name":"キム・ベイシンガー","desc":"女優","icon":"🎬"},{"name":"中谷美紀","desc":"女優","icon":"🎭"}],"2-16":[{"name":"リチャード・マークス","desc":"シンガーソングライター","icon":"🎵"},{"name":"木梨憲武","desc":"とんねるず","icon":"😄"},{"name":"河村隆一","desc":"歌手・Luna Sea","icon":"🎸"}],"2-17":[{"name":"マイケル・ジョーダン","desc":"NBAレジェンド","icon":"🏀"},{"name":"パリス・ヒルトン","desc":"タレント・実業家","icon":"💄"},{"name":"中山秀征","desc":"タレント","icon":"😄"}],"2-18":[{"name":"ジョン・トラボルタ","desc":"俳優・ダンサー","icon":"🕺"},{"name":"山下智久","desc":"歌手・俳優","icon":"⭐"},{"name":"仲間由紀恵","desc":"女優","icon":"🎭"}],"2-19":[{"name":"コペルニクス","desc":"天文学者・地動説を提唱","icon":"🌍"},{"name":"スモーキー・ロビンソン","desc":"R&B歌手","icon":"🎤"},{"name":"堺雅人","desc":"俳優","icon":"🎭"}],"2-20":[{"name":"リアーナ","desc":"歌手・実業家","icon":"🎤"},{"name":"所ジョージ","desc":"タレント","icon":"😄"},{"name":"菅田将暉","desc":"俳優・歌手","icon":"🎭"}],"2-21":[{"name":"アラン・リックマン","desc":"俳優・ハリー・ポッター","icon":"🎬"},{"name":"菅田将暉","desc":"俳優・歌手","icon":"🎭"},{"name":"西川貴教","desc":"歌手","icon":"🎤"}],"2-22":[{"name":"ジョージ・ワシントン","desc":"初代アメリカ大統領","icon":"🏛️"},{"name":"スティーヴ・アーウィン","desc":"ワニハンター","icon":"🐊"},{"name":"浜田雅功","desc":"ダウンタウン","icon":"😄"}],"2-23":[{"name":"天皇誕生日","desc":"徳仁天皇","icon":"👑"},{"name":"W・E・B・デュボイス","desc":"社会学者・公民権運動","icon":"✊"},{"name":"仲村トオル","desc":"俳優","icon":"🎭"}],"2-24":[{"name":"河村隆一","desc":"歌手・Luna Sea","icon":"🎸"},{"name":"松田翔太","desc":"俳優","icon":"🎭"},{"name":"相葉雅紀","desc":"タレント・嵐","icon":"⭐"}],"2-25":[{"name":"ルノワール","desc":"印象派の画家","icon":"🎨"},{"name":"ジョージ・ハリスン","desc":"ビートルズのメンバー","icon":"🎸"},{"name":"仲間由紀恵","desc":"女優","icon":"🎭"}],"2-26":[{"name":"ヴィクトル・ユーゴー","desc":"小説家「レ・ミゼラブル」","icon":"📖"},{"name":"ジョニー・キャッシュ","desc":"カントリー歌手","icon":"🎸"},{"name":"相葉雅紀","desc":"タレント・嵐","icon":"⭐"}],"2-27":[{"name":"ジョン・スタインベック","desc":"小説家「怒りの葡萄」","icon":"📖"},{"name":"エリザベス・テイラー","desc":"女優","icon":"🎬"},{"name":"中村俊輔","desc":"元サッカー選手","icon":"⚽"}],"2-28":[{"name":"フランク・ゲーリー","desc":"建築家","icon":"🏗️"},{"name":"瀬戸朝香","desc":"女優","icon":"🎭"},{"name":"長渕剛","desc":"ミュージシャン","icon":"🎸"}],"2-29":[{"name":"ジョアキーノ・ロッシーニ","desc":"オペラ作曲家","icon":"🎼"},{"name":"うるう年生まれ","desc":"4年に1度の誕生日","icon":"📅"},{"name":"スーパーレア誕生日","desc":"うるう日","icon":"🍀"}],"3-1":[{"name":"フレデリック・ショパン","desc":"作曲家・ピアノの詩人","icon":"🎹"},{"name":"水嶋ヒロ","desc":"俳優・小説家","icon":"🎭"},{"name":"佐藤浩市","desc":"俳優","icon":"🎭"}],"3-2":[{"name":"ドクター・スース","desc":"絵本作家","icon":"📚"},{"name":"ジョン・ボン・ジョヴィ","desc":"ロックミュージシャン","icon":"🎸"},{"name":"貴乃花","desc":"元横綱","icon":"🏆"}],"3-3":[{"name":"アレクサンダー・グラハム・ベル","desc":"電話の発明者","icon":"📞"},{"name":"ひな祭り","desc":"日本の伝統行事","icon":"🎎"},{"name":"速水もこみち","desc":"俳優・料理家","icon":"🍳"}],"3-4":[{"name":"アントニオ・ヴィヴァルディ","desc":"作曲家「四季」","icon":"🎼"},{"name":"ショーン・パフィ・コムズ","desc":"ラッパー","icon":"🎤"},{"name":"羽生善治","desc":"将棋棋士","icon":"♟️"}],"3-5":[{"name":"羽生善治","desc":"将棋棋士","icon":"♟️"},{"name":"ジェームズ・マディソン","desc":"第4代アメリカ大統領","icon":"🏛️"},{"name":"エヴァ・メンデス","desc":"女優","icon":"🎬"}],"3-6":[{"name":"ミケランジェロ","desc":"ルネサンスの芸術家","icon":"🎨"},{"name":"シャキール・オニール","desc":"NBAスター","icon":"🏀"},{"name":"小栗旬","desc":"俳優","icon":"🎭"}],"3-7":[{"name":"土屋太鳳","desc":"女優","icon":"🎭"},{"name":"ラヴェル","desc":"フランスの作曲家","icon":"🎼"},{"name":"トマス・アクィナス","desc":"神学者・哲学者","icon":"⛪"}],"3-8":[{"name":"ヤオ・ミン","desc":"NBA選手","icon":"🏀"},{"name":"藤田朋子","desc":"女優","icon":"🎭"},{"name":"ケネス・グラハム","desc":"「たのしい川辺」作者","icon":"📖"}],"3-9":[{"name":"ユーリ・ガガーリン","desc":"人類初の宇宙飛行士","icon":"🚀"},{"name":"ボビー・フィッシャー","desc":"チェスの天才","icon":"♟️"},{"name":"福士蒼汰","desc":"俳優","icon":"🎭"}],"3-10":[{"name":"シャロン・ストーン","desc":"女優","icon":"🎬"},{"name":"榮倉奈々","desc":"女優","icon":"🎭"},{"name":"シャルル・ド・ゴール","desc":"フランス大統領","icon":"🏛️"}],"3-11":[{"name":"ルパート・マードック","desc":"メディア王","icon":"📺"},{"name":"岸谷五朗","desc":"俳優","icon":"🎭"},{"name":"吉田拓郎","desc":"シンガーソングライター","icon":"🎸"}],"3-12":[{"name":"ライザ・ミネリ","desc":"女優・歌手","icon":"🎭"},{"name":"相川七瀬","desc":"ロック歌手","icon":"🎸"},{"name":"岩田剛典","desc":"俳優・EXILE","icon":"⭐"}],"3-13":[{"name":"岩田剛典","desc":"俳優・EXILE","icon":"⭐"},{"name":"ウィリアム・H・メイシー","desc":"俳優","icon":"🎬"},{"name":"中丸雄一","desc":"KAT-TUN","icon":"⭐"}],"3-14":[{"name":"アルベルト・アインシュタイン","desc":"物理学者・相対性理論","icon":"🧠"},{"name":"ステフィ・グラフ","desc":"テニス選手","icon":"🎾"},{"name":"白鵬","desc":"横綱","icon":"🏆"}],"3-15":[{"name":"アンドリュー・ジャクソン","desc":"第7代アメリカ大統領","icon":"🏛️"},{"name":"水野美紀","desc":"女優","icon":"🎭"},{"name":"武豊","desc":"騎手","icon":"🐎"}],"3-16":[{"name":"武豊","desc":"騎手","icon":"🐎"},{"name":"シャロン・ストーン","desc":"女優","icon":"🎬"},{"name":"橋本真也","desc":"元プロレスラー","icon":"🏆"}],"3-17":[{"name":"聖パトリック","desc":"アイルランドの守護聖人","icon":"☘️"},{"name":"ロブ・ロウ","desc":"俳優","icon":"🎬"},{"name":"田中みな実","desc":"タレント・女優","icon":"💄"}],"3-18":[{"name":"アダム・レヴィーン","desc":"マルーン5のボーカル","icon":"🎸"},{"name":"中島美嘉","desc":"歌手","icon":"🎵"},{"name":"藤木直人","desc":"俳優","icon":"🎭"}],"3-19":[{"name":"ブルース・ウィリス","desc":"俳優","icon":"🎬"},{"name":"森田剛","desc":"俳優・元V6","icon":"🎭"},{"name":"デビッド・リヴィングストン","desc":"探検家","icon":"🗺️"}],"3-20":[{"name":"スパイク・リー","desc":"映画監督","icon":"🎬"},{"name":"佐々木希","desc":"モデル・女優","icon":"💄"},{"name":"三上博史","desc":"俳優","icon":"🎭"}],"3-21":[{"name":"ヨハン・セバスチャン・バッハ","desc":"バロック音楽の巨匠","icon":"🎼"},{"name":"沢尻エリカ","desc":"女優","icon":"🎭"},{"name":"AKB前田敦子","desc":"元AKB48センター","icon":"⭐"}],"3-22":[{"name":"大泉洋","desc":"俳優・タレント","icon":"😄"},{"name":"レジー・ミラー","desc":"NBAスター","icon":"🏀"},{"name":"マルセル・マルソー","desc":"パントマイムの神様","icon":"🎭"}],"3-23":[{"name":"上戸彩","desc":"女優","icon":"🎭"},{"name":"岡田健史","desc":"俳優","icon":"🎭"},{"name":"北川景子","desc":"女優","icon":"🎭"}],"3-24":[{"name":"北川景子","desc":"女優","icon":"🎭"},{"name":"スティーヴ・マックイーン","desc":"俳優","icon":"🎬"},{"name":"ウィリアム・モリス","desc":"アーツ・アンド・クラフツ運動","icon":"🎨"}],"3-25":[{"name":"エルトン・ジョン","desc":"ポップ・ロック歌手","icon":"🎹"},{"name":"滝沢秀明","desc":"元俳優","icon":"⭐"},{"name":"スティーヴン・タイラー","desc":"エアロスミスのボーカル","icon":"🎸"}],"3-26":[{"name":"レディー・ガガ","desc":"歌手・パフォーマー","icon":"🎤"},{"name":"広末涼子","desc":"女優","icon":"🎭"},{"name":"テネシー・ウィリアムズ","desc":"劇作家","icon":"📖"}],"3-27":[{"name":"マーロン・ブランド","desc":"俳優「ゴッドファーザー」","icon":"🎬"},{"name":"佐藤健","desc":"俳優","icon":"🎭"},{"name":"ルートヴィヒ・ミース","desc":"建築家・モダニズム","icon":"🏗️"}],"3-28":[{"name":"レディー・ガガ","desc":"歌手・パフォーマー","icon":"🎤"},{"name":"広末涼子","desc":"女優","icon":"🎭"},{"name":"ラファエロ","desc":"ルネサンスの画家","icon":"🎨"}],"3-29":[{"name":"竹野内豊","desc":"俳優","icon":"🎭"},{"name":"ジョン・タイラー","desc":"第10代アメリカ大統領","icon":"🏛️"},{"name":"長澤まさみ","desc":"女優","icon":"🎭"}],"3-30":[{"name":"EXILE HIRO","desc":"EXILEリーダー","icon":"💃"},{"name":"フランシスコ・デ・ゴヤ","desc":"スペインの画家","icon":"🎨"},{"name":"ウォーレン・ビーティ","desc":"俳優","icon":"🎬"}],"3-31":[{"name":"ルネ・デカルト","desc":"哲学者","icon":"🧠"},{"name":"ユアン・マクレガー","desc":"俳優","icon":"🎬"},{"name":"鈴木保奈美","desc":"女優","icon":"🎭"}],"4-1":[{"name":"オットー・フォン・ビスマルク","desc":"ドイツ帝国宰相","icon":"🏛️"},{"name":"エイプリルフール","desc":"4月1日の伝統","icon":"🤡"},{"name":"スーザン・ボイル","desc":"歌手","icon":"🎤"}],"4-2":[{"name":"ハンス・クリスチャン・アンデルセン","desc":"童話作家「人魚姫」","icon":"📖"},{"name":"仲里依紗","desc":"女優","icon":"🎭"},{"name":"エミール・ゾラ","desc":"フランスの小説家","icon":"📖"}],"4-3":[{"name":"ジェーン・グドール","desc":"チンパンジー研究者","icon":"🐒"},{"name":"武田真治","desc":"俳優・サックス奏者","icon":"🎷"},{"name":"ドリー・パートン","desc":"カントリー歌手","icon":"🎵"}],"4-4":[{"name":"ヒース・レジャー","desc":"俳優「ジョーカー」","icon":"🎬"},{"name":"坂口健太郎","desc":"俳優","icon":"🎭"},{"name":"武田鉄矢","desc":"俳優・歌手","icon":"🎭"}],"4-5":[{"name":"向井理","desc":"俳優","icon":"🎭"},{"name":"コリン・パウエル","desc":"元米国務長官","icon":"🏛️"},{"name":"アナ・デ・アルマス","desc":"女優","icon":"🎬"}],"4-6":[{"name":"向井理","desc":"俳優","icon":"🎭"},{"name":"アンドレ・プレヴィン","desc":"指揮者・作曲家","icon":"🎼"},{"name":"岡田将生","desc":"俳優","icon":"🎭"}],"4-7":[{"name":"ジャッキー・チェン","desc":"俳優・アクションスター","icon":"🥋"},{"name":"玉木宏","desc":"俳優","icon":"🎭"},{"name":"ウィリアム・ワーズワース","desc":"イギリスの詩人","icon":"📖"}],"4-8":[{"name":"横山裕","desc":"俳優・関ジャニ∞","icon":"⭐"},{"name":"長谷川博己","desc":"俳優","icon":"🎭"},{"name":"佐藤仁美","desc":"女優","icon":"🎭"}],"4-9":[{"name":"長谷川博己","desc":"俳優","icon":"🎭"},{"name":"クリスティン・デイヴィス","desc":"女優","icon":"🎬"},{"name":"ボードレール","desc":"フランスの詩人","icon":"📖"}],"4-10":[{"name":"藤木直人","desc":"俳優","icon":"🎭"},{"name":"ジョセフ・プリーストリー","desc":"化学者・酸素の発見","icon":"🔬"},{"name":"眞栄田郷敦","desc":"俳優","icon":"🎭"}],"4-11":[{"name":"鈴木亮平","desc":"俳優","icon":"🎭"},{"name":"ジェレミー・クラークソン","desc":"自動車評論家","icon":"🚗"},{"name":"水野美紀","desc":"女優","icon":"🎭"}],"4-12":[{"name":"宇宙の日","desc":"ガガーリン初の宇宙飛行","icon":"🚀"},{"name":"前田敦子","desc":"元AKB48センター","icon":"⭐"},{"name":"デビッド・レターマン","desc":"テレビ司会者","icon":"📺"}],"4-13":[{"name":"トーマス・ジェファーソン","desc":"第3代アメリカ大統領","icon":"🏛️"},{"name":"和田毅","desc":"プロ野球選手","icon":"⚾"},{"name":"三浦翔平","desc":"俳優","icon":"🎭"}],"4-14":[{"name":"本木雅弘","desc":"俳優","icon":"🎭"},{"name":"アントニオ・サリエリ","desc":"作曲家","icon":"🎼"},{"name":"高橋克典","desc":"俳優・歌手","icon":"🎭"}],"4-15":[{"name":"レオナルド・ダ・ヴィンチ","desc":"ルネサンスの天才芸術家","icon":"🎨"},{"name":"エマ・ワトソン","desc":"女優「ハーミオーニー」","icon":"⚡"},{"name":"坂本龍一","desc":"音楽家・YMO","icon":"🎹"}],"4-16":[{"name":"チャールズ・チャップリン","desc":"喜劇王・映画監督","icon":"🎬"},{"name":"中山きんに君","desc":"お笑い芸人","icon":"💪"},{"name":"西内まりや","desc":"モデル・女優","icon":"💄"}],"4-17":[{"name":"ニコロ・マキャヴェッリ","desc":"政治哲学者「君主論」","icon":"📖"},{"name":"山本耕史","desc":"俳優","icon":"🎭"},{"name":"J・P・モルガン","desc":"金融王","icon":"💰"}],"4-18":[{"name":"妻夫木聡","desc":"俳優","icon":"🎭"},{"name":"コービン・ブルー","desc":"俳優・歌手","icon":"🎤"},{"name":"エリック・ロバーツ","desc":"俳優","icon":"🎬"}],"4-19":[{"name":"小澤征爾","desc":"指揮者","icon":"🎼"},{"name":"ケイト・ハドソン","desc":"女優","icon":"🎬"},{"name":"吉岡里帆","desc":"女優","icon":"🎭"}],"4-20":[{"name":"岡田将生","desc":"俳優","icon":"🎭"},{"name":"ジェシカ・ラング","desc":"女優","icon":"🎬"},{"name":"岩城滉一","desc":"俳優","icon":"🎭"}],"4-21":[{"name":"エリザベス女王2世","desc":"イギリス女王","icon":"👑"},{"name":"石田ゆり子","desc":"女優","icon":"🎭"},{"name":"アンソニー・クイン","desc":"俳優","icon":"🎬"}],"4-22":[{"name":"イマヌエル・カント","desc":"哲学者","icon":"🧠"},{"name":"ジャック・ニコルソン","desc":"俳優","icon":"🎬"},{"name":"関根勤","desc":"お笑い芸人","icon":"😄"}],"4-23":[{"name":"ウィリアム・シェイクスピア","desc":"劇作家・詩人","icon":"📖"},{"name":"松坂桃李","desc":"俳優","icon":"🎭"},{"name":"サー・マイケル・アトキン","desc":"俳優","icon":"🎬"}],"4-24":[{"name":"ケリー・クラークソン","desc":"歌手","icon":"🎤"},{"name":"篠原涼子","desc":"女優・歌手","icon":"🎭"},{"name":"バルバラ","desc":"フランスの歌手","icon":"🎵"}],"4-25":[{"name":"田中麗奈","desc":"女優","icon":"🎭"},{"name":"オリバー・クロムウェル","desc":"イギリスの政治指導者","icon":"⚔️"},{"name":"ロブ・ゾンビ","desc":"ロックミュージシャン","icon":"🎸"}],"4-26":[{"name":"ジェリー・サインフィールド","desc":"コメディアン","icon":"😄"},{"name":"美川憲一","desc":"演歌歌手","icon":"🎵"},{"name":"チャニング・テイタム","desc":"俳優","icon":"🎬"}],"4-27":[{"name":"コービー・ブライアント","desc":"NBAレジェンド","icon":"🏀"},{"name":"柴田恭兵","desc":"俳優","icon":"🎭"},{"name":"ユリシーズ・グラント","desc":"第18代アメリカ大統領","icon":"🏛️"}],"4-28":[{"name":"ジェシカ・アルバ","desc":"女優","icon":"🎬"},{"name":"稲森いずみ","desc":"女優","icon":"🎭"},{"name":"ペネロペ・クルス","desc":"女優","icon":"🎬"}],"4-29":[{"name":"昭和の日","desc":"昭和天皇誕生日","icon":"🎌"},{"name":"デューク・エリントン","desc":"ジャズ音楽家","icon":"🎷"},{"name":"石原慎太郎","desc":"作家・元東京都知事","icon":"📖"}],"4-30":[{"name":"藤原竜也","desc":"俳優","icon":"🎭"},{"name":"カール・フリードリヒ・ガウス","desc":"数学者","icon":"🔢"},{"name":"ミシェル・ファイファー","desc":"女優","icon":"🎬"}],"5-1":[{"name":"反町隆史","desc":"俳優","icon":"🎭"},{"name":"メーデー","desc":"国際労働者の日","icon":"✊"},{"name":"ジョディ・コリンズ","desc":"フォーク歌手","icon":"🎵"}],"5-2":[{"name":"デビッド・ベッカム","desc":"元サッカー選手","icon":"⚽"},{"name":"長瀬智也","desc":"俳優・元TOKIO","icon":"🎸"},{"name":"レオナルド・ダ・ヴィンチ（命日）","desc":"ルネサンスの天才","icon":"🎨"}],"5-3":[{"name":"ジェームズ・ブラウン","desc":"ソウルミュージックの帝王","icon":"🎤"},{"name":"石橋貴明","desc":"とんねるず","icon":"😄"},{"name":"ゴールダ・メイア","desc":"イスラエル初の女性首相","icon":"🏛️"}],"5-4":[{"name":"オードリー・ヘプバーン","desc":"女優","icon":"🎬"},{"name":"スターウォーズの日","desc":"May the 4th be with you","icon":"⭐"},{"name":"徳光和夫","desc":"アナウンサー","icon":"📺"}],"5-5":[{"name":"こどもの日","desc":"日本の祝日","icon":"🎏"},{"name":"カール・マルクス","desc":"哲学者「共産党宣言」","icon":"📖"},{"name":"なべやかん","desc":"タレント","icon":"😄"}],"5-6":[{"name":"ジークムント・フロイト","desc":"精神分析の父","icon":"🧠"},{"name":"クロエ・モレッツ","desc":"女優","icon":"🎬"},{"name":"岡村隆史","desc":"ナインティナイン","icon":"😄"}],"5-7":[{"name":"ジョハネス・ブラームス","desc":"ロマン派の作曲家","icon":"🎼"},{"name":"森高千里","desc":"歌手・作詞家","icon":"🎵"},{"name":"ゲーリー・クーパー","desc":"俳優","icon":"🎬"}],"5-8":[{"name":"ハリー・S・トルーマン","desc":"第33代アメリカ大統領","icon":"🏛️"},{"name":"速水重道","desc":"俳優","icon":"🎭"},{"name":"坂本昌行","desc":"俳優・V6","icon":"🎭"}],"5-9":[{"name":"ビリー・ジョエル","desc":"ピアノマン","icon":"🎹"},{"name":"大友花恋","desc":"女優","icon":"🎭"},{"name":"玉木宏","desc":"俳優","icon":"🎭"}],"5-10":[{"name":"フレッド・アステア","desc":"ダンサー・俳優","icon":"🕺"},{"name":"U-KNOW（東方神起）","desc":"歌手・俳優","icon":"🎤"},{"name":"中山美穂","desc":"女優・歌手","icon":"🎵"}],"5-11":[{"name":"サルバドール・ダリ","desc":"シュルレアリスムの画家","icon":"🎨"},{"name":"スティーヴィー・ニックス","desc":"フリートウッド・マック","icon":"🎤"},{"name":"田中圭","desc":"俳優","icon":"🎭"}],"5-12":[{"name":"フローレンス・ナイチンゲール","desc":"近代看護の母","icon":"🏥"},{"name":"キャサリン・ヘプバーン","desc":"女優","icon":"🎬"},{"name":"中村ゆり","desc":"女優","icon":"🎭"}],"5-13":[{"name":"スティーヴィー・ワンダー","desc":"ミュージシャン","icon":"🎹"},{"name":"ハーヴェイ・カイテル","desc":"俳優","icon":"🎬"},{"name":"小嶋陽菜","desc":"元AKB48","icon":"⭐"}],"5-14":[{"name":"マーク・ザッカーバーグ","desc":"Facebook創業者","icon":"💻"},{"name":"ティム・ロス","desc":"俳優","icon":"🎬"},{"name":"平野紫耀","desc":"俳優・King & Prince","icon":"⭐"}],"5-15":[{"name":"中田英寿","desc":"元サッカー選手","icon":"⚽"},{"name":"エヴァン・レイチェル・ウッド","desc":"女優","icon":"🎬"},{"name":"アラゴン","desc":"フランスの詩人","icon":"📖"}],"5-16":[{"name":"ジャネット・ジャクソン","desc":"歌手","icon":"🎤"},{"name":"仲村トオル","desc":"俳優","icon":"🎭"},{"name":"ヘンリー・フォンダ","desc":"俳優","icon":"🎬"}],"5-17":[{"name":"エドワード・ジェンナー","desc":"天然痘ワクチンの発明者","icon":"💉"},{"name":"江口洋介","desc":"俳優","icon":"🎭"},{"name":"手越祐也","desc":"歌手・タレント","icon":"🎤"}],"5-18":[{"name":"チャイコフスキー","desc":"ロシアの作曲家","icon":"🎼"},{"name":"手越祐也","desc":"歌手・タレント","icon":"🎤"},{"name":"ベルトルト・ブレヒト","desc":"劇作家","icon":"📖"}],"5-19":[{"name":"マルコムX","desc":"公民権運動指導者","icon":"✊"},{"name":"村上信五","desc":"タレント・関ジャニ∞","icon":"⭐"},{"name":"ジョー・コッカー","desc":"ロック歌手","icon":"🎸"}],"5-20":[{"name":"シェール","desc":"歌手・女優","icon":"🎤"},{"name":"中川翔子","desc":"タレント・歌手","icon":"🎵"},{"name":"ジョン・スチュアート・ミル","desc":"哲学者","icon":"📖"}],"5-21":[{"name":"土屋アンナ","desc":"モデル・歌手","icon":"🎤"},{"name":"アルブレヒト・デューラー","desc":"ドイツの画家","icon":"🎨"},{"name":"ビル・マー","desc":"コメディアン","icon":"😄"}],"5-22":[{"name":"リヒャルト・ワーグナー","desc":"作曲家","icon":"🎼"},{"name":"ナオミ・キャンベル","desc":"スーパーモデル","icon":"💄"},{"name":"庄司智春","desc":"お笑い芸人","icon":"😄"}],"5-23":[{"name":"滝沢カレン","desc":"モデル・タレント","icon":"💄"},{"name":"ジョアン・ミロ","desc":"スペインの画家","icon":"🎨"},{"name":"岡田将生","desc":"俳優","icon":"🎭"}],"5-24":[{"name":"ボブ・ディラン","desc":"ノーベル文学賞","icon":"🎸"},{"name":"クイーン・ヴィクトリア","desc":"イギリス女王","icon":"👑"},{"name":"高橋由伸","desc":"元プロ野球選手","icon":"⚾"}],"5-25":[{"name":"マイク・マイヤーズ","desc":"俳優・コメディアン","icon":"😄"},{"name":"みのもんた","desc":"テレビ司会者","icon":"📺"},{"name":"ラルフ・ウォルドー・エマーソン","desc":"思想家","icon":"📖"}],"5-26":[{"name":"ジョン・ウェイン","desc":"西部劇スター","icon":"🎬"},{"name":"マイルス・デイヴィス","desc":"ジャズトランペッター","icon":"🎷"},{"name":"神木隆之介","desc":"俳優","icon":"🎭"}],"5-27":[{"name":"ハーマン・メルヴィル","desc":"小説家「白鯨」","icon":"📖"},{"name":"中村勘九郎","desc":"歌舞伎俳優","icon":"🎭"},{"name":"ヘンリー・キッシンジャー","desc":"元米国務長官","icon":"🏛️"}],"5-28":[{"name":"ケイリー・クオコ","desc":"女優","icon":"🎬"},{"name":"トニー・レオン","desc":"俳優","icon":"🎬"},{"name":"パティ・ラベル","desc":"R&B歌手","icon":"🎤"}],"5-29":[{"name":"ジョン・F・ケネディ","desc":"第35代アメリカ大統領","icon":"🏛️"},{"name":"市原隼人","desc":"俳優","icon":"🎭"},{"name":"ボブ・ホープ","desc":"コメディアン","icon":"😄"}],"5-30":[{"name":"クリント・イーストウッド","desc":"俳優・映画監督","icon":"🎬"},{"name":"安田顕","desc":"俳優","icon":"🎭"},{"name":"スティーヴィー・ニックス","desc":"ロック歌手","icon":"🎤"}],"5-31":[{"name":"クリント・イーストウッド","desc":"俳優・映画監督","icon":"🎬"},{"name":"小池栄子","desc":"女優・タレント","icon":"🎭"},{"name":"アニー・レノックス","desc":"ユーリズミックス","icon":"🎤"}],"6-1":[{"name":"マリリン・モンロー","desc":"女優・永遠のスター","icon":"💄"},{"name":"堂本光一","desc":"歌手・KinKi Kids","icon":"🎵"},{"name":"ロン・ウッド","desc":"ローリング・ストーンズ","icon":"🎸"}],"6-2":[{"name":"コリン・ファレル","desc":"俳優","icon":"🎬"},{"name":"中島健人","desc":"俳優・Sexy Zone","icon":"⭐"},{"name":"ジャスティン・ロング","desc":"俳優","icon":"🎬"}],"6-3":[{"name":"ラファエル・ナダル","desc":"テニス選手","icon":"🎾"},{"name":"岡田義徳","desc":"俳優","icon":"🎭"},{"name":"アレン・ギンズバーグ","desc":"ビートジェネレーションの詩人","icon":"📖"}],"6-4":[{"name":"波瑠","desc":"女優","icon":"🎭"},{"name":"アンジェリナ・ジョリー","desc":"女優","icon":"🎬"},{"name":"スコット・ウルフ","desc":"俳優","icon":"🎬"}],"6-5":[{"name":"マーク・ウォールバーグ","desc":"俳優","icon":"🎬"},{"name":"加藤シゲアキ","desc":"俳優・作家","icon":"📖"},{"name":"ロバート・F・ケネディ","desc":"アメリカの政治家","icon":"🏛️"}],"6-6":[{"name":"ビョーン・ボルグ","desc":"テニスの神様","icon":"🎾"},{"name":"東山紀之","desc":"俳優・少年隊","icon":"🎭"},{"name":"ベラスケス","desc":"スペインの画家","icon":"🎨"}],"6-7":[{"name":"プリンス","desc":"ポップスター","icon":"🎵"},{"name":"山崎賢人","desc":"俳優","icon":"🎭"},{"name":"ポール・ゴーギャン","desc":"後期印象派の画家","icon":"🎨"}],"6-8":[{"name":"フランク・ロイド・ライト","desc":"建築家","icon":"🏗️"},{"name":"岡田健史","desc":"俳優","icon":"🎭"},{"name":"キャンディス・カメロン","desc":"女優","icon":"🎬"}],"6-9":[{"name":"ジョニー・デップ","desc":"俳優","icon":"🎬"},{"name":"東野幸治","desc":"お笑い芸人","icon":"😄"},{"name":"コール・ポーター","desc":"作曲家","icon":"🎼"}],"6-10":[{"name":"ジュディ・ガーランド","desc":"女優「オズの魔法使い」","icon":"🌈"},{"name":"野村忠宏","desc":"柔道選手・金メダリスト","icon":"🥋"},{"name":"石田ゆり子","desc":"女優","icon":"🎭"}],"6-11":[{"name":"ジャック・クストー","desc":"海洋探検家","icon":"🐠"},{"name":"シェリル・クロウ","desc":"ロック歌手","icon":"🎸"},{"name":"安藤美姫","desc":"フィギュアスケート選手","icon":"⛸️"}],"6-12":[{"name":"アン・フランク","desc":"「アンネの日記」作者","icon":"📓"},{"name":"ジョージ・H・W・ブッシュ","desc":"第41代アメリカ大統領","icon":"🏛️"},{"name":"橋本環奈","desc":"女優・アイドル","icon":"⭐"}],"6-13":[{"name":"クリス・エヴァンス","desc":"俳優・キャプテン・アメリカ","icon":"🛡️"},{"name":"W・B・イェイツ","desc":"アイルランドの詩人","icon":"📖"},{"name":"木村文乃","desc":"女優","icon":"🎭"}],"6-14":[{"name":"チェ・ゲバラ","desc":"革命家","icon":"⭐"},{"name":"ドナルド・トランプ","desc":"アメリカ大統領","icon":"🏛️"},{"name":"三浦翔平","desc":"俳優","icon":"🎭"}],"6-15":[{"name":"エディ・マーフィ","desc":"俳優・コメディアン","icon":"😄"},{"name":"武田玲奈","desc":"女優","icon":"🎭"},{"name":"ユリウス・カエサル","desc":"ローマの英雄","icon":"⚔️"}],"6-16":[{"name":"アダム・スミス","desc":"経済学者「国富論」","icon":"📖"},{"name":"タパック・シャクール","desc":"ラッパー","icon":"🎤"},{"name":"斎藤工","desc":"俳優","icon":"🎭"}],"6-17":[{"name":"バリー・マニロウ","desc":"ポップ歌手","icon":"🎤"},{"name":"吉田羊","desc":"女優","icon":"🎭"},{"name":"ヴィーナス・ウィリアムズ","desc":"テニス選手","icon":"🎾"}],"6-18":[{"name":"ポール・マッカートニー","desc":"ビートルズのメンバー","icon":"🎸"},{"name":"窪田正孝","desc":"俳優","icon":"🎭"},{"name":"イザベラ・ロッセリーニ","desc":"女優・モデル","icon":"💄"}],"6-19":[{"name":"ブレーズ・パスカル","desc":"数学者・哲学者","icon":"🔢"},{"name":"竹内まりや","desc":"シンガーソングライター","icon":"🎵"},{"name":"ポーラ・アブドゥル","desc":"歌手・振付師","icon":"🎤"}],"6-20":[{"name":"ライオネル・リッチー","desc":"ポップ歌手","icon":"🎤"},{"name":"浅野忠信","desc":"俳優","icon":"🎭"},{"name":"エリック・ベネイ","desc":"R&B歌手","icon":"🎵"}],"6-21":[{"name":"ジャン＝ポール・サルトル","desc":"実存主義の哲学者","icon":"📖"},{"name":"高橋克典","desc":"俳優・歌手","icon":"🎭"},{"name":"ウィリアム・プリンス","desc":"歌手","icon":"🎵"}],"6-22":[{"name":"ダン・ブラウン","desc":"小説家「ダ・ヴィンチ・コード」","icon":"📖"},{"name":"市村正親","desc":"俳優・ミュージカル","icon":"🎭"},{"name":"カーリー・サイモン","desc":"シンガーソングライター","icon":"🎵"}],"6-23":[{"name":"アラン・チューリング","desc":"コンピュータの父・数学者","icon":"💻"},{"name":"桐谷美玲","desc":"女優・モデル","icon":"💄"},{"name":"ジャネット・ジャクソン","desc":"ポップ歌手","icon":"🎤"}],"6-24":[{"name":"Gackt","desc":"ミュージシャン・俳優","icon":"🎸"},{"name":"ミック・フリートウッド","desc":"フリートウッド・マック","icon":"🥁"},{"name":"ジャック・ドゥミ","desc":"映画監督","icon":"🎬"}],"6-25":[{"name":"ジョージ・マイケル","desc":"ポップスター","icon":"🎤"},{"name":"水川あさみ","desc":"女優","icon":"🎭"},{"name":"ロバート・パティンソン","desc":"俳優「トワイライト」","icon":"🎬"}],"6-26":[{"name":"ルソー","desc":"啓蒙思想家「社会契約論」","icon":"📖"},{"name":"水原希子","desc":"モデル・女優","icon":"💄"},{"name":"アリアナ・グランデ","desc":"ポップ歌手","icon":"🎤"}],"6-27":[{"name":"ヘレン・ケラー","desc":"障害を乗り越えた教育者","icon":"✨"},{"name":"水原希子","desc":"モデル・女優","icon":"💄"},{"name":"ジュリア・ダフィー","desc":"女優","icon":"🎬"}],"6-28":[{"name":"メル・ブルックス","desc":"映画監督","icon":"😄"},{"name":"鈴木砂羽","desc":"女優","icon":"🎭"},{"name":"ルーベンス","desc":"バロック絵画の巨匠","icon":"🎨"}],"6-29":[{"name":"アントワーヌ・ド・サン＝テグジュペリ","desc":"「星の王子さま」作者","icon":"🌟"},{"name":"柳楽優弥","desc":"俳優","icon":"🎭"},{"name":"ゲイリー・ビジー","desc":"俳優","icon":"🎬"}],"6-30":[{"name":"マイク・タイソン","desc":"プロボクサー","icon":"🥊"},{"name":"矢田亜希子","desc":"女優","icon":"🎭"},{"name":"ミケーレ・アルボレート","desc":"F1ドライバー","icon":"🏎️"}],"7-1":[{"name":"ダイアナ妃","desc":"英国王妃","icon":"👑"},{"name":"デビー・ハリー","desc":"ブロンディのボーカル","icon":"🎤"},{"name":"大島優子","desc":"元AKB48","icon":"⭐"}],"7-2":[{"name":"リンゼイ・ローハン","desc":"女優","icon":"🎬"},{"name":"比嘉愛未","desc":"女優","icon":"🎭"},{"name":"エルンスト・ヘッケル","desc":"生物学者","icon":"🔬"}],"7-3":[{"name":"フランツ・カフカ","desc":"小説家「変身」","icon":"📖"},{"name":"生田絵梨花","desc":"女優・元乃木坂46","icon":"⭐"},{"name":"モニク","desc":"女優","icon":"🎬"}],"7-4":[{"name":"アメリカ独立記念日","desc":"1776年独立宣言","icon":"🗽"},{"name":"紀平梨花","desc":"フィギュアスケート選手","icon":"⛸️"},{"name":"ミナ・ソウヴァリ","desc":"女優","icon":"🎬"}],"7-5":[{"name":"田中直樹","desc":"お笑い芸人・ココリコ","icon":"😄"},{"name":"ジャン・コクトー","desc":"フランスの芸術家","icon":"🎨"},{"name":"ロビン・バン・ペルシー","desc":"サッカー選手","icon":"⚽"}],"7-6":[{"name":"フリーダ・カーロ","desc":"メキシコの画家","icon":"🎨"},{"name":"ダライ・ラマ14世","desc":"チベットの精神的指導者","icon":"☮️"},{"name":"武井咲","desc":"女優","icon":"🎭"}],"7-7":[{"name":"七夕","desc":"星祭り・織姫と彦星","icon":"🌟"},{"name":"リンゴ・スター","desc":"ビートルズのドラマー","icon":"🥁"},{"name":"YOU","desc":"タレント・女優","icon":"😄"}],"7-8":[{"name":"ケヴィン・ベーコン","desc":"俳優","icon":"🎬"},{"name":"相武紗季","desc":"女優","icon":"🎭"},{"name":"ジョン・ロック","desc":"哲学者","icon":"📖"}],"7-9":[{"name":"ジャック・ホワイト","desc":"ロックミュージシャン","icon":"🎸"},{"name":"鈴木福","desc":"俳優","icon":"🎭"},{"name":"O・ヘンリー","desc":"短編小説家","icon":"📖"}],"7-10":[{"name":"ソフィア・ベルガラ","desc":"女優","icon":"🎬"},{"name":"上野樹里","desc":"女優","icon":"🎭"},{"name":"ニコラ・テスラ","desc":"発明家","icon":"⚡"}],"7-11":[{"name":"ヨーコ・オノ","desc":"芸術家・ジョン・レノンの妻","icon":"🎨"},{"name":"加藤綾子","desc":"アナウンサー","icon":"📺"},{"name":"上地雄輔","desc":"俳優・歌手","icon":"🎭"}],"7-12":[{"name":"ミシェル・ロドリゲス","desc":"女優","icon":"🎬"},{"name":"上地雄輔","desc":"俳優・歌手","icon":"🎭"},{"name":"浜田岳","desc":"俳優","icon":"🎭"}],"7-13":[{"name":"ハリソン・フォード","desc":"俳優・ハン・ソロ","icon":"🎬"},{"name":"窪塚洋介","desc":"俳優","icon":"🎭"},{"name":"パトリック・スチュワート","desc":"俳優・ピカード艦長","icon":"🚀"}],"7-14":[{"name":"フランス革命記念日","desc":"バスティーユ牢獄襲撃","icon":"🇫🇷"},{"name":"田辺誠一","desc":"俳優","icon":"🎭"},{"name":"ジェラルド・フォード","desc":"第38代アメリカ大統領","icon":"🏛️"}],"7-15":[{"name":"レンブラント","desc":"バロック絵画の巨匠","icon":"🎨"},{"name":"真木よう子","desc":"女優","icon":"🎭"},{"name":"ジョジャン・フォンテナ","desc":"女優","icon":"🎬"}],"7-16":[{"name":"ロアルド・ダール","desc":"「チャーリーとチョコレート工場」","icon":"🍫"},{"name":"ウィル・フェレル","desc":"俳優・コメディアン","icon":"😄"},{"name":"三上博史","desc":"俳優","icon":"🎭"}],"7-17":[{"name":"永瀬廉","desc":"俳優・King & Prince","icon":"⭐"},{"name":"アーサー・ミラー","desc":"劇作家","icon":"📖"},{"name":"カミラ（英国王妃）","desc":"イギリス王妃","icon":"👑"}],"7-18":[{"name":"ネルソン・マンデラ","desc":"南アフリカ元大統領","icon":"✊"},{"name":"永野芽郁","desc":"女優","icon":"🎭"},{"name":"ディエゴ・マラドーナ","desc":"サッカーの神様","icon":"⚽"}],"7-19":[{"name":"ブライアン・メイ","desc":"クイーンのギタリスト","icon":"🎸"},{"name":"ジュリア・ルイス＝ドレイファス","desc":"女優","icon":"🎭"},{"name":"オーラ","desc":"スウェーデンの歌手","icon":"🎵"}],"7-20":[{"name":"アポロ11号月面着陸","desc":"人類が初めて月を歩いた日","icon":"🌙"},{"name":"新垣結衣","desc":"女優","icon":"🎭"},{"name":"カルロス・サンタナ","desc":"ギタリスト","icon":"🎸"}],"7-21":[{"name":"ロビン・ウィリアムズ","desc":"俳優・コメディアン","icon":"😄"},{"name":"佐藤仁美","desc":"女優","icon":"🎭"},{"name":"アーネスト・ヘミングウェイ","desc":"小説家「老人と海」","icon":"📖"}],"7-22":[{"name":"ダニエル・ラドクリフ","desc":"俳優・ハリー・ポッター","icon":"⚡"},{"name":"吉岡里帆","desc":"女優","icon":"🎭"},{"name":"グレゴール・メンデル","desc":"遺伝学の父","icon":"🧬"}],"7-23":[{"name":"森七菜","desc":"女優","icon":"🎭"},{"name":"ダニエル・ラドクリフ","desc":"俳優","icon":"🎬"},{"name":"ニアル・ホーラン","desc":"One Directionメンバー","icon":"🎸"}],"7-24":[{"name":"ジェニファー・ロペス","desc":"歌手・女優","icon":"🎤"},{"name":"シモン・ボリバル","desc":"南米独立の英雄","icon":"⚔️"},{"name":"松田翔太","desc":"俳優","icon":"🎭"}],"7-25":[{"name":"マット・ルブランク","desc":"俳優「フレンズ」","icon":"🎬"},{"name":"フレデリック・ダグラス","desc":"公民権活動家","icon":"✊"},{"name":"松田翔太","desc":"俳優","icon":"🎭"}],"7-26":[{"name":"ミック・ジャガー","desc":"ローリング・ストーンズ","icon":"🎸"},{"name":"大倉忠義","desc":"俳優・関ジャニ∞","icon":"⭐"},{"name":"ケイト・ビーハン","desc":"女優","icon":"🎬"}],"7-27":[{"name":"深田恭子","desc":"女優","icon":"🎭"},{"name":"ジョナサン・ライス・マイヤーズ","desc":"俳優","icon":"🎬"},{"name":"テイラー・シリング","desc":"女優","icon":"🎬"}],"7-28":[{"name":"長澤まさみ","desc":"女優","icon":"🎭"},{"name":"生田斗真","desc":"俳優","icon":"🎭"},{"name":"ヨハン・セバスチャン・バッハ（命日）","desc":"音楽の父","icon":"🎼"}],"7-29":[{"name":"生田斗真","desc":"俳優","icon":"🎭"},{"name":"マルセロ","desc":"サッカー選手","icon":"⚽"},{"name":"ウィニー・マンデラ","desc":"南アフリカの活動家","icon":"✊"}],"7-30":[{"name":"アーノルド・シュワルツェネッガー","desc":"俳優・元カリフォルニア州知事","icon":"💪"},{"name":"エミリー・ブロンテ","desc":"小説家「嵐が丘」","icon":"📖"},{"name":"矢島舞美","desc":"歌手","icon":"🎵"}],"7-31":[{"name":"J・K・ローリング","desc":"「ハリー・ポッター」作者","icon":"⚡"},{"name":"ハリー・ポッター（誕生日設定）","desc":"架空の魔法使い","icon":"🧙"},{"name":"安田章大","desc":"俳優・関ジャニ∞","icon":"⭐"}],"8-1":[{"name":"乙武洋匡","desc":"作家・タレント","icon":"📖"},{"name":"ジム・キャリー","desc":"コメディ俳優","icon":"😄"},{"name":"ハーマン・メルヴィル","desc":"小説家「白鯨」","icon":"📖"}],"8-2":[{"name":"内田朱莉","desc":"女優","icon":"🎭"},{"name":"ジェームズ・ボールドウィン","desc":"小説家・公民権運動","icon":"📖"},{"name":"サム・ウォーシントン","desc":"俳優「アバター」","icon":"🎬"}],"8-3":[{"name":"浜崎あゆみ","desc":"歌手","icon":"🎵"},{"name":"トム・ブレイディ","desc":"NFLスター","icon":"🏈"},{"name":"マーサ・スチュワート","desc":"生活情報のカリスマ","icon":"🏠"}],"8-4":[{"name":"バラク・オバマ","desc":"第44代アメリカ大統領","icon":"🏛️"},{"name":"千原ジュニア","desc":"お笑い芸人","icon":"😄"},{"name":"黒澤明","desc":"映画監督","icon":"🎬"}],"8-5":[{"name":"ニール・アームストロング","desc":"人類初の月面着陸","icon":"🌙"},{"name":"田中優子","desc":"女優","icon":"🎭"},{"name":"マリリン・モンロー（命日）","desc":"永遠のスター","icon":"💄"}],"8-6":[{"name":"広島原爆忌","desc":"1945年原爆投下","icon":"☮️"},{"name":"アンディ・ウォーホル","desc":"ポップアートの旗手","icon":"🎨"},{"name":"岩田剛典","desc":"俳優・EXILE","icon":"⭐"}],"8-7":[{"name":"DAIGO","desc":"ミュージシャン・タレント","icon":"🎸"},{"name":"ドミトリ・メンデレーエフ","desc":"周期表を作った化学者","icon":"⚗️"},{"name":"チャーリー・サバラ","desc":"俳優","icon":"🎬"}],"8-8":[{"name":"ロジャー・フェデラー","desc":"テニスの神様","icon":"🎾"},{"name":"タモリ","desc":"タレント","icon":"📺"},{"name":"ダスティン・ホフマン","desc":"俳優","icon":"🎬"}],"8-9":[{"name":"長崎原爆忌","desc":"1945年長崎原爆投下","icon":"☮️"},{"name":"キーラ・ナイトレイ","desc":"女優","icon":"🎬"},{"name":"ホイットニー・ヒューストン","desc":"歌手","icon":"🎤"}],"8-10":[{"name":"宮﨑あおい","desc":"女優","icon":"🎭"},{"name":"アントニオ・バンデラス","desc":"俳優","icon":"🎬"},{"name":"ハーバート・フーバー","desc":"第31代アメリカ大統領","icon":"🏛️"}],"8-11":[{"name":"クリス・ヘムズワース","desc":"俳優・マイティ・ソー","icon":"⚡"},{"name":"田中みな実","desc":"タレント","icon":"💄"},{"name":"アレックス・ヘイリー","desc":"「ルーツ」の作者","icon":"📖"}],"8-12":[{"name":"芦田愛菜","desc":"女優","icon":"🎭"},{"name":"ジョージ・ソロス","desc":"投資家","icon":"💰"},{"name":"アービング・バーリン","desc":"「ホワイト・クリスマス」作曲家","icon":"🎼"}],"8-13":[{"name":"ヒッチコック","desc":"映画監督・サスペンスの神様","icon":"🎬"},{"name":"坂本昌行","desc":"俳優・V6","icon":"🎭"},{"name":"キューバ・グッディング・ジュニア","desc":"俳優","icon":"🎬"}],"8-14":[{"name":"戸田恵梨香","desc":"女優","icon":"🎭"},{"name":"ミラ・ソルヴィノ","desc":"女優","icon":"🎬"},{"name":"ハリー・ケイン","desc":"サッカー選手","icon":"⚽"}],"8-15":[{"name":"終戦記念日","desc":"1945年日本終戦","icon":"☮️"},{"name":"ナポレオン・ボナパルト","desc":"フランス皇帝","icon":"⚔️"},{"name":"大友克洋","desc":"漫画家「AKIRA」","icon":"📚"}],"8-16":[{"name":"マドンナ","desc":"クイーン・オブ・ポップ","icon":"🎤"},{"name":"工藤静香","desc":"歌手","icon":"🎵"},{"name":"エルヴィス・プレスリー（命日）","desc":"ロックの王様","icon":"🎸"}],"8-17":[{"name":"ロバート・デ・ニーロ","desc":"俳優","icon":"🎬"},{"name":"ベイブ・ルース","desc":"野球の神様","icon":"⚾"},{"name":"河村隆一","desc":"歌手","icon":"🎸"}],"8-18":[{"name":"ロバート・レッドフォード","desc":"俳優・映画監督","icon":"🎬"},{"name":"エドワード・ノートン","desc":"俳優","icon":"🎬"},{"name":"高橋愛","desc":"歌手・モーニング娘。","icon":"🎵"}],"8-19":[{"name":"オーヴィル・ライト","desc":"ライト兄弟の弟","icon":"✈️"},{"name":"今田耕司","desc":"お笑い芸人","icon":"😄"},{"name":"マシュー・ペリー（俳優）","desc":"「フレンズ」のチャンドラー","icon":"🎬"}],"8-20":[{"name":"ロバート・プラント","desc":"レッド・ツェッペリンのボーカル","icon":"🎸"},{"name":"中田敦彦","desc":"お笑い芸人・実業家","icon":"😄"},{"name":"デミ・ロヴァート","desc":"歌手・女優","icon":"🎤"}],"8-21":[{"name":"ウサイン・ボルト","desc":"世界最速のスプリンター","icon":"🏃"},{"name":"SHELLY","desc":"タレント","icon":"💄"},{"name":"キム・ベイシンガー","desc":"女優","icon":"🎬"}],"8-22":[{"name":"クロード・ドビュッシー","desc":"印象主義の作曲家","icon":"🎼"},{"name":"加護亜依","desc":"歌手・モーニング娘。","icon":"🎵"},{"name":"ジェームズ・カーン","desc":"俳優「ゴッドファーザー」","icon":"🎬"}],"8-23":[{"name":"ジーン・ケリー","desc":"ダンサー・俳優「雨に唄えば」","icon":"🕺"},{"name":"新山千春","desc":"歌手・タレント","icon":"🎵"},{"name":"ロック・ハドソン","desc":"俳優","icon":"🎬"}],"8-24":[{"name":"鈴木奈穂子","desc":"アナウンサー","icon":"📺"},{"name":"デイヴ・チャペル","desc":"コメディアン","icon":"😄"},{"name":"カール・マルクス（別日）","desc":"哲学者","icon":"📖"}],"8-25":[{"name":"ティム・バートン","desc":"映画監督","icon":"🎬"},{"name":"小林聡美","desc":"女優","icon":"🎭"},{"name":"フレデリック・ショパン（別日）","desc":"ピアノの詩人","icon":"🎹"}],"8-26":[{"name":"マザー・テレサ","desc":"ノーベル平和賞・聖人","icon":"🙏"},{"name":"加藤夏希","desc":"女優","icon":"🎭"},{"name":"クリス・パイン","desc":"俳優","icon":"🎬"}],"8-27":[{"name":"リンドン・B・ジョンソン","desc":"第36代アメリカ大統領","icon":"🏛️"},{"name":"松浦亜弥","desc":"歌手","icon":"🎵"},{"name":"マン・レイ","desc":"芸術家・写真家","icon":"📷"}],"8-28":[{"name":"ヨハン・ヴォルフガング・フォン・ゲーテ","desc":"詩人・劇作家「ファウスト」","icon":"📖"},{"name":"シャニア・トゥエイン","desc":"カントリー歌手","icon":"🎸"},{"name":"塚本高史","desc":"俳優","icon":"🎭"}],"8-29":[{"name":"マイケル・ジャクソン","desc":"キング・オブ・ポップ","icon":"🎤"},{"name":"チャーリー・パーカー","desc":"ジャズサックス奏者","icon":"🎷"},{"name":"岩城滉一","desc":"俳優","icon":"🎭"}],"8-30":[{"name":"メアリー・シェリー","desc":"小説家「フランケンシュタイン」","icon":"📖"},{"name":"キャメロン・ディアス","desc":"女優","icon":"🎬"},{"name":"田村淳","desc":"タレント","icon":"😄"}],"8-31":[{"name":"ヴァン・モリソン","desc":"ロック歌手","icon":"🎸"},{"name":"宮川大輔","desc":"お笑い芸人","icon":"😄"},{"name":"リチャード・ギア","desc":"俳優","icon":"🎬"}],"9-1":[{"name":"香里奈","desc":"女優・モデル","icon":"💄"},{"name":"ティル・リンデマン","desc":"ラムシュタインのボーカル","icon":"🎸"},{"name":"関東大震災の日","desc":"1923年・防災の日","icon":"🌎"}],"9-2":[{"name":"キアヌ・リーブス","desc":"俳優「マトリックス」","icon":"🎬"},{"name":"サルマ・ハエック","desc":"女優","icon":"🎬"},{"name":"柴田あゆみ","desc":"歌手","icon":"🎵"}],"9-3":[{"name":"チャーリー・シーン","desc":"俳優","icon":"🎬"},{"name":"VERBAL（m-flo）","desc":"ラッパー","icon":"🎤"},{"name":"ルイ・サリバン","desc":"近代建築の父","icon":"🏗️"}],"9-4":[{"name":"ビヨンセ","desc":"クイーン・ビー","icon":"🐝"},{"name":"原田泰造","desc":"お笑い芸人・ネプチューン","icon":"😄"},{"name":"ダニー・デビート","desc":"俳優","icon":"🎬"}],"9-5":[{"name":"フレディ・マーキュリー","desc":"クイーンのボーカル","icon":"🎤"},{"name":"神田うの","desc":"タレント・デザイナー","icon":"💄"},{"name":"ジョン・メイヤー","desc":"シンガーソングライター","icon":"🎸"}],"9-6":[{"name":"椎名林檎","desc":"ミュージシャン","icon":"🎸"},{"name":"ロジャー・ウォーターズ","desc":"ピンク・フロイド","icon":"🎸"},{"name":"スウィス・ビーツ","desc":"音楽プロデューサー","icon":"🎵"}],"9-7":[{"name":"宮崎駿","desc":"アニメーション監督","icon":"🎬"},{"name":"エリザベス1世","desc":"イングランド女王","icon":"👑"},{"name":"グウィネス・パルトロー","desc":"女優","icon":"🎬"}],"9-8":[{"name":"村上春樹","desc":"小説家","icon":"📖"},{"name":"ピンク（歌手）","desc":"ポップ・ロック歌手","icon":"🎤"},{"name":"リチャード1世（獅子心王）","desc":"イングランド王","icon":"⚔️"}],"9-9":[{"name":"加藤浩次","desc":"お笑い芸人・極楽とんぼ","icon":"😄"},{"name":"ヒュー・グラント","desc":"俳優","icon":"🎬"},{"name":"アダム・サンドラー","desc":"俳優・コメディアン","icon":"😄"}],"9-10":[{"name":"コリン・ファース","desc":"俳優","icon":"🎬"},{"name":"長澤まさみ","desc":"女優","icon":"🎭"},{"name":"ジャック・マー","desc":"アリババ創業者","icon":"💻"}],"9-11":[{"name":"ドウェイン・ジョンソン","desc":"俳優・元プロレスラー","icon":"💪"},{"name":"911テロ記念日","desc":"2001年同時多発テロ","icon":"☮️"},{"name":"田中麗奈","desc":"女優","icon":"🎭"}],"9-12":[{"name":"ポール・ウォーカー","desc":"俳優「ワイルドスピード」","icon":"🚗"},{"name":"小澤征悦","desc":"俳優","icon":"🎭"},{"name":"ジェシー・オーエンス","desc":"ベルリン五輪4冠スプリンター","icon":"🏃"}],"9-13":[{"name":"吉高由里子","desc":"女優","icon":"🎭"},{"name":"ロアルド・ダール（別日）","desc":"児童文学作家","icon":"📖"},{"name":"ミハイル・ゴルバチョフ（別日）","desc":"ソ連最後の指導者","icon":"🏛️"}],"9-14":[{"name":"錦戸亮","desc":"俳優・歌手","icon":"⭐"},{"name":"アレキサンダー・フレミング","desc":"ペニシリンの発見者","icon":"💉"},{"name":"エイミー・ワインハウス（別日）","desc":"ジャズ歌手","icon":"🎤"}],"9-15":[{"name":"アガサ・クリスティー","desc":"推理小説の女王","icon":"🔍"},{"name":"プリンス・ハリー","desc":"英国王室","icon":"👑"},{"name":"井上真央","desc":"女優","icon":"🎭"}],"9-16":[{"name":"米倉涼子","desc":"女優","icon":"🎭"},{"name":"ニック・ケイヴ","desc":"ロックミュージシャン","icon":"🎸"},{"name":"マルク・シャガール（別日）","desc":"画家","icon":"🎨"}],"9-17":[{"name":"藤木直人","desc":"俳優","icon":"🎭"},{"name":"ジェレミー・アイアンズ","desc":"俳優","icon":"🎬"},{"name":"ケン・スローン","desc":"作家","icon":"📖"}],"9-18":[{"name":"ジミ・ヘンドリックス（命日）","desc":"ロックギターの神様","icon":"🎸"},{"name":"くわばたりえ","desc":"お笑い芸人","icon":"😄"},{"name":"グレタ・ガルボ","desc":"女優","icon":"🎬"}],"9-19":[{"name":"稲垣吾郎","desc":"俳優・元SMAP","icon":"🎭"},{"name":"ジミー・ファロン","desc":"テレビ司会者","icon":"📺"},{"name":"ウィリアム・ゴールディング","desc":"小説家・ノーベル賞","icon":"📖"}],"9-20":[{"name":"ソフィア・ローレン","desc":"女優","icon":"🎬"},{"name":"中島美嘉","desc":"歌手","icon":"🎵"},{"name":"アプトン・シンクレア","desc":"小説家","icon":"📖"}],"9-21":[{"name":"ビル・マーレー","desc":"俳優・コメディアン","icon":"😄"},{"name":"上田晋也","desc":"タレント・くりぃむしちゅー","icon":"😄"},{"name":"H・G・ウェルズ","desc":"SF作家「タイムマシン」","icon":"🚀"}],"9-22":[{"name":"浜田岳","desc":"俳優","icon":"🎭"},{"name":"マイケル・ファラデー","desc":"電磁誘導の発見者","icon":"⚡"},{"name":"ニック・ケイヴ","desc":"ロックミュージシャン","icon":"🎸"}],"9-23":[{"name":"ブルース・スプリングスティーン","desc":"ロックの神様","icon":"🎸"},{"name":"上川隆也","desc":"俳優","icon":"🎭"},{"name":"レイ・チャールズ","desc":"ソウル・R&B歌手","icon":"🎹"}],"9-24":[{"name":"西川貴教","desc":"歌手","icon":"🎤"},{"name":"ジム・ヘンソン","desc":"マペット創始者","icon":"🐸"},{"name":"F・スコット・フィッツジェラルド（別日）","desc":"小説家","icon":"📖"}],"9-25":[{"name":"ウィル・スミス","desc":"俳優・ラッパー","icon":"🎬"},{"name":"柴咲コウ","desc":"女優・歌手","icon":"🎭"},{"name":"マーク・ロスコ","desc":"抽象表現主義の画家","icon":"🎨"}],"9-26":[{"name":"セリーナ・ウィリアムズ","desc":"テニスの女王","icon":"🎾"},{"name":"佐々木希","desc":"モデル・女優","icon":"💄"},{"name":"ジョージ・ガーシュウィン","desc":"作曲家","icon":"🎼"}],"9-27":[{"name":"グウェン・ステファニー","desc":"ポップ歌手","icon":"🎤"},{"name":"北乃きい","desc":"女優","icon":"🎭"},{"name":"サミュエル・アダムズ","desc":"アメリカ建国の父","icon":"🏛️"}],"9-28":[{"name":"ナオミ・ワッツ","desc":"女優","icon":"🎬"},{"name":"江角マキコ","desc":"女優","icon":"🎭"},{"name":"エドワード・マネ","desc":"印象派の画家","icon":"🎨"}],"9-29":[{"name":"ミゲル・デ・セルバンテス","desc":"小説家「ドン・キホーテ」","icon":"📖"},{"name":"岡田義徳","desc":"俳優","icon":"🎭"},{"name":"ジェリー・リー・ルイス","desc":"ロックの先駆者","icon":"🎹"}],"9-30":[{"name":"鈴木杏樹","desc":"女優","icon":"🎭"},{"name":"エクトール・ベルリオーズ","desc":"ロマン派の作曲家","icon":"🎼"},{"name":"マリリン・モンロー（別日）","desc":"女優","icon":"💄"}],"10-1":[{"name":"ジミー・カーター","desc":"第39代アメリカ大統領・ノーベル平和賞","icon":"🏛️"},{"name":"谷原章介","desc":"俳優","icon":"🎭"},{"name":"ウォルター・マッソー","desc":"俳優","icon":"🎬"}],"10-2":[{"name":"マハトマ・ガンジー","desc":"インド独立運動の父","icon":"☮️"},{"name":"グルーチョ・マルクス","desc":"喜劇俳優","icon":"😄"},{"name":"矢田亜希子","desc":"女優","icon":"🎭"}],"10-3":[{"name":"トミー・リー","desc":"ドラマー・モトリー・クルー","icon":"🥁"},{"name":"上原多香子","desc":"歌手・SPEED","icon":"🎵"},{"name":"ゲルハルト・シュレーダー","desc":"元ドイツ首相","icon":"🏛️"}],"10-4":[{"name":"ダルビッシュ有","desc":"プロ野球選手","icon":"⚾"},{"name":"ラッセル・クロウ","desc":"俳優","icon":"🎬"},{"name":"スプートニクの日","desc":"1957年ソ連初の人工衛星","icon":"🛸"}],"10-5":[{"name":"ケイト・ウィンスレット","desc":"女優「タイタニック」","icon":"🎬"},{"name":"菅田将暉","desc":"俳優","icon":"🎭"},{"name":"ドニ・ディドロ","desc":"啓蒙思想家","icon":"📖"}],"10-6":[{"name":"安倍なつみ","desc":"歌手・モーニング娘。","icon":"🎵"},{"name":"ル・コルビュジエ","desc":"近代建築の巨匠","icon":"🏗️"},{"name":"ジェレミー・ダン","desc":"俳優","icon":"🎬"}],"10-7":[{"name":"ニールス・ボーア","desc":"物理学者・原子モデル","icon":"⚛️"},{"name":"橋本真也","desc":"元プロレスラー","icon":"🏆"},{"name":"プーチン（ウラジーミル）","desc":"ロシア大統領","icon":"🏛️"}],"10-8":[{"name":"シゴーニー・ウィーバー","desc":"女優「エイリアン」","icon":"🎬"},{"name":"柴咲コウ","desc":"女優・歌手","icon":"🎭"},{"name":"チェ・ゲバラ（没日）","desc":"革命家","icon":"⭐"}],"10-9":[{"name":"ジョン・レノン","desc":"ビートルズのメンバー","icon":"🎸"},{"name":"チェ・ゲバラ（没日）","desc":"革命家","icon":"⭐"},{"name":"タモリ","desc":"タレント","icon":"📺"}],"10-10":[{"name":"ヴェルディ","desc":"イタリアのオペラ作曲家","icon":"🎼"},{"name":"仲間由紀恵","desc":"女優","icon":"🎭"},{"name":"ブレット・ファーヴ","desc":"NFLクォーターバック","icon":"🏈"}],"10-11":[{"name":"エレノア・ルーズベルト","desc":"元大統領夫人・人権活動家","icon":"✊"},{"name":"ルーク・ペリー","desc":"俳優","icon":"🎬"},{"name":"内村光良","desc":"お笑い芸人","icon":"😄"}],"10-12":[{"name":"ヒュー・ジャックマン","desc":"俳優・ウルヴァリン","icon":"🎬"},{"name":"光浦靖子","desc":"お笑い芸人","icon":"😄"},{"name":"コロンブス・デー","desc":"アメリカ大陸発見記念","icon":"🚢"}],"10-13":[{"name":"マーガレット・サッチャー","desc":"英国初の女性首相","icon":"🏛️"},{"name":"ポール・サイモン","desc":"シンガーソングライター","icon":"🎵"},{"name":"伊藤英明","desc":"俳優","icon":"🎭"}],"10-14":[{"name":"浅田真央","desc":"フィギュアスケート選手","icon":"⛸️"},{"name":"ロジャー・フェデラー（別日）","desc":"テニスの神様","icon":"🎾"},{"name":"エイゼンハウアー","desc":"第34代アメリカ大統領","icon":"🏛️"}],"10-15":[{"name":"ニーチェ","desc":"哲学者「神は死んだ」","icon":"📖"},{"name":"堺正章","desc":"タレント・俳優","icon":"😄"},{"name":"マリア・テレジア","desc":"オーストリア女帝","icon":"👑"}],"10-16":[{"name":"オスカー・ワイルド","desc":"劇作家・詩人","icon":"📖"},{"name":"エミネム","desc":"ラッパー","icon":"🎤"},{"name":"長谷川博己","desc":"俳優","icon":"🎭"}],"10-17":[{"name":"草彅剛","desc":"俳優・元SMAP","icon":"🎭"},{"name":"フレデリック・ショパン（命日）","desc":"ピアノの詩人","icon":"🎹"},{"name":"アーシア・アルジェント","desc":"女優","icon":"🎬"}],"10-18":[{"name":"チャック・ベリー","desc":"ロックンロールの父","icon":"🎸"},{"name":"内田有紀","desc":"女優","icon":"🎭"},{"name":"ルカ・トーニ","desc":"サッカー選手","icon":"⚽"}],"10-19":[{"name":"佐藤浩市","desc":"俳優","icon":"🎭"},{"name":"ジョン・アダムズ","desc":"第2代アメリカ大統領","icon":"🏛️"},{"name":"マルティナ・ナブラチロワ","desc":"テニス選手","icon":"🎾"}],"10-20":[{"name":"ジェイク・ギレンホール","desc":"俳優","icon":"🎬"},{"name":"辻希美","desc":"タレント・モーニング娘。","icon":"🎵"},{"name":"クリストファー・レン","desc":"建築家・セント・ポール大聖堂","icon":"🏗️"}],"10-21":[{"name":"アルフレッド・ノーベル","desc":"ノーベル賞創設者","icon":"💥"},{"name":"キム・カーダシアン","desc":"タレント・実業家","icon":"💄"},{"name":"二宮和也","desc":"俳優・嵐","icon":"⭐"}],"10-22":[{"name":"フランツ・リスト","desc":"ピアニスト・作曲家","icon":"🎹"},{"name":"ジェフ・ゴールドブラム","desc":"俳優","icon":"🎬"},{"name":"鈴木亮平","desc":"俳優","icon":"🎭"}],"10-23":[{"name":"ペレ（別日）","desc":"サッカーの神様","icon":"⚽"},{"name":"嵐山光三郎","desc":"作家","icon":"📖"},{"name":"ニコロ・マキャヴェッリ（別日）","desc":"政治哲学者","icon":"📖"}],"10-24":[{"name":"国連設立記念日","desc":"1945年国連成立","icon":"🌍"},{"name":"加藤茶","desc":"タレント・ドリフターズ","icon":"😄"},{"name":"ホアキン・フェニックス","desc":"俳優","icon":"🎬"}],"10-25":[{"name":"パブロ・ピカソ","desc":"キュービズムの巨匠","icon":"🎨"},{"name":"田口淳之介","desc":"俳優・KAT-TUN","icon":"⭐"},{"name":"ケイティ・ペリー","desc":"ポップ歌手","icon":"🎤"}],"10-26":[{"name":"ヒラリー・クリントン","desc":"元国務長官・大統領候補","icon":"🏛️"},{"name":"柳沢慎吾","desc":"俳優・タレント","icon":"😄"},{"name":"イブン・アル＝ハイサム","desc":"光学の父","icon":"🔭"}],"10-27":[{"name":"シオドア・ルーズベルト","desc":"第26代アメリカ大統領","icon":"🏛️"},{"name":"小川直也","desc":"柔道選手・プロレスラー","icon":"🥋"},{"name":"ジョン・クリーズ","desc":"コメディアン・モンティ・パイソン","icon":"😄"}],"10-28":[{"name":"ビル・ゲイツ","desc":"マイクロソフト創業者","icon":"💻"},{"name":"ホアキン・フェニックス（別日）","desc":"俳優","icon":"🎬"},{"name":"田中麗奈","desc":"女優","icon":"🎭"}],"10-29":[{"name":"ジャン＝リュック・ゴダール","desc":"ヌーヴェル・ヴァーグ監督","icon":"🎬"},{"name":"徳永英明","desc":"シンガーソングライター","icon":"🎵"},{"name":"リチャード・ドレイファス","desc":"俳優","icon":"🎬"}],"10-30":[{"name":"ディエゴ・マラドーナ","desc":"サッカーの神様","icon":"⚽"},{"name":"優香","desc":"タレント・女優","icon":"😄"},{"name":"エズラ・パウンド","desc":"詩人","icon":"📖"}],"10-31":[{"name":"ハロウィン","desc":"万聖節前夜","icon":"🎃"},{"name":"マイケル・J・フォックス","desc":"俳優「バック・トゥ・ザ・フューチャー」","icon":"🎬"},{"name":"松田美由紀","desc":"女優","icon":"🎭"}],"11-1":[{"name":"アントワーヌ・ヴォルテール","desc":"啓蒙思想家","icon":"📖"},{"name":"鈴木えみ","desc":"モデル","icon":"💄"},{"name":"ピアース・ブロスナン","desc":"俳優・007","icon":"🎬"}],"11-2":[{"name":"松島菜々子","desc":"女優","icon":"🎭"},{"name":"シャーリー・ウォーカー","desc":"作曲家","icon":"🎼"},{"name":"マリー・アントワネット（命日）","desc":"フランス王妃","icon":"👑"}],"11-3":[{"name":"文化の日","desc":"日本の祝日","icon":"🎌"},{"name":"チャールズ・ブロンソン","desc":"俳優","icon":"🎬"},{"name":"森進一","desc":"演歌歌手","icon":"🎵"}],"11-4":[{"name":"松下奈緒","desc":"女優・ピアニスト","icon":"🎹"},{"name":"コンデ・ナスト","desc":"出版王","icon":"📰"},{"name":"ウィル・ロジャーズ","desc":"コメディアン","icon":"😄"}],"11-5":[{"name":"松本潤","desc":"俳優・嵐","icon":"⭐"},{"name":"ブライアン・アダムス","desc":"カナダのロック歌手","icon":"🎸"},{"name":"タチアナ・ボロトワ","desc":"女優","icon":"🎬"}],"11-6":[{"name":"エマ・ストーン","desc":"女優","icon":"🎬"},{"name":"加藤ローサ","desc":"女優・モデル","icon":"💄"},{"name":"ジョン・フィリップ・スーザ","desc":"「星条旗よ永遠なれ」作曲家","icon":"🎺"}],"11-7":[{"name":"マリー・キュリー","desc":"物理学者・ノーベル賞2度受賞","icon":"⚗️"},{"name":"吉田拓郎","desc":"シンガーソングライター","icon":"🎸"},{"name":"リヴ・タイラー","desc":"女優","icon":"🎬"}],"11-8":[{"name":"ゴードン・ラムゼイ","desc":"シェフ・テレビ司会者","icon":"🍳"},{"name":"宮迫博之","desc":"お笑い芸人","icon":"😄"},{"name":"エドモント・ハレー","desc":"天文学者・ハレー彗星","icon":"☄️"}],"11-9":[{"name":"ベルリンの壁崩壊（1989年）","desc":"東西ドイツ統一へ","icon":"🧱"},{"name":"松田龍平","desc":"俳優","icon":"🎭"},{"name":"カール・セーガン","desc":"天文学者・作家","icon":"🌌"}],"11-10":[{"name":"マルティン・ルター","desc":"宗教改革者","icon":"⛪"},{"name":"宮崎あおい","desc":"女優","icon":"🎭"},{"name":"ミシェル・ホルブック","desc":"俳優","icon":"🎬"}],"11-11":[{"name":"ポッキーの日","desc":"日本のお菓子記念日","icon":"🍫"},{"name":"ドストエフスキー","desc":"ロシアの小説家「罪と罰」","icon":"📖"},{"name":"EXILE HIRO","desc":"EXILEリーダー","icon":"💃"}],"11-12":[{"name":"アン・ハサウェイ","desc":"女優","icon":"🎬"},{"name":"広末涼子","desc":"女優","icon":"🎭"},{"name":"サン＝サーンス","desc":"フランスの作曲家","icon":"🎼"}],"11-13":[{"name":"オーギュスト・ロダン","desc":"彫刻家「考える人」","icon":"🗿"},{"name":"ウーピー・ゴールドバーグ","desc":"女優","icon":"🎬"},{"name":"大野智","desc":"嵐のリーダー（別日）","icon":"⭐"}],"11-14":[{"name":"チャールズ3世（英国王）","desc":"イギリス国王","icon":"👑"},{"name":"クロード・モネ","desc":"印象派の画家","icon":"🎨"},{"name":"渡部篤郎","desc":"俳優","icon":"🎭"}],"11-15":[{"name":"瑛太","desc":"俳優","icon":"🎭"},{"name":"チャド・クロー","desc":"ミュージシャン","icon":"🎸"},{"name":"エルデシュ・パール","desc":"数学者","icon":"🔢"}],"11-16":[{"name":"木村カエラ","desc":"ミュージシャン","icon":"🎸"},{"name":"マーガレット・ミード","desc":"文化人類学者","icon":"🔬"},{"name":"アリアナ・ハフィントン","desc":"メディア創業者","icon":"📰"}],"11-17":[{"name":"小池徹平","desc":"俳優・歌手","icon":"🎭"},{"name":"ロラン・ガロス","desc":"テニスの大会の由来","icon":"🎾"},{"name":"マーティン・スコセッシ","desc":"映画監督","icon":"🎬"}],"11-18":[{"name":"高橋英樹","desc":"俳優","icon":"🎭"},{"name":"オーウェン・ウィルソン","desc":"俳優","icon":"🎬"},{"name":"ウォルト・ディズニー（別日）","desc":"ディズニー創業者","icon":"🐭"}],"11-19":[{"name":"ジョディ・フォスター","desc":"女優","icon":"🎬"},{"name":"阿部サダヲ","desc":"俳優","icon":"🎭"},{"name":"ジェームズ・ガーフィールド","desc":"第20代アメリカ大統領","icon":"🏛️"}],"11-20":[{"name":"ジョー・バイデン","desc":"第46代アメリカ大統領","icon":"🏛️"},{"name":"エドウィン・ハッブル","desc":"天文学者・宇宙膨張を発見","icon":"🔭"},{"name":"ロバート・デ・ニーロ（別日）","desc":"俳優","icon":"🎬"}],"11-21":[{"name":"岡田准一","desc":"俳優・V6","icon":"🎭"},{"name":"ルネ・マグリット","desc":"シュルレアリスムの画家","icon":"🎨"},{"name":"コンドリーザ・ライス","desc":"元米国務長官","icon":"🏛️"}],"11-22":[{"name":"宮沢りえ","desc":"女優","icon":"🎭"},{"name":"マーク・トウェイン","desc":"小説家「トム・ソーヤの冒険」","icon":"📖"},{"name":"ジョン・F・ケネディ（暗殺日）","desc":"アメリカ大統領","icon":"🏛️"}],"11-23":[{"name":"勤労感謝の日","desc":"日本の祝日","icon":"🎌"},{"name":"YOSHIKI（X JAPAN）","desc":"ミュージシャン","icon":"🎸"},{"name":"西村知美","desc":"女優・タレント","icon":"🎭"}],"11-24":[{"name":"明石家さんま","desc":"お笑い芸人","icon":"😄"},{"name":"チャールズ・ダーウィン（「種の起源」出版日）","desc":"生物学者","icon":"🧬"},{"name":"スコット・ジョップリン","desc":"ラグタイムの王様","icon":"🎹"}],"11-25":[{"name":"アンドリュー・カーネギー","desc":"鉄鋼王・慈善家","icon":"💰"},{"name":"クリスティーナ・アップルゲイト","desc":"女優","icon":"🎬"},{"name":"ジョー・ディマジオ","desc":"野球選手","icon":"⚾"}],"11-26":[{"name":"チャールズ・シュルツ","desc":"スヌーピーの生みの親","icon":"🐶"},{"name":"竹中直人","desc":"俳優・映画監督","icon":"🎬"},{"name":"ジョン・マケイン","desc":"元米上院議員","icon":"🏛️"}],"11-27":[{"name":"今剛","desc":"ギタリスト","icon":"🎸"},{"name":"ブルース・リー（別日）","desc":"武道家・俳優","icon":"🥋"},{"name":"ジミ・ヘンドリックス（別日）","desc":"ロックギターの神様","icon":"🎸"}],"11-28":[{"name":"ウィリアム・ブレイク","desc":"詩人・画家","icon":"🎨"},{"name":"田辺誠一","desc":"俳優","icon":"🎭"},{"name":"ジョン・バンヴィル","desc":"アイルランドの作家","icon":"📖"}],"11-29":[{"name":"YOSHIKI（X JAPAN）（別日）","desc":"ミュージシャン","icon":"🎸"},{"name":"ルイサ・メイ・オルコット","desc":"小説家「若草物語」","icon":"📖"},{"name":"チョコレートの日","desc":"記念日","icon":"🍫"}],"11-30":[{"name":"ウィンストン・チャーチル","desc":"英国首相・ノーベル文学賞","icon":"🏛️"},{"name":"マーク・トウェイン（別日）","desc":"小説家","icon":"📖"},{"name":"加藤晴彦","desc":"俳優","icon":"🎭"}],"12-1":[{"name":"ウッディ・アレン","desc":"映画監督・コメディアン","icon":"🎬"},{"name":"岡田義徳","desc":"俳優","icon":"🎭"},{"name":"サラ・シルバーマン","desc":"コメディアン","icon":"😄"}],"12-2":[{"name":"ブリトニー・スピアーズ","desc":"ポップスター","icon":"🎤"},{"name":"ヒカキン","desc":"YouTuber","icon":"📹"},{"name":"ジョルジュ・スーラ","desc":"点描画家","icon":"🎨"}],"12-3":[{"name":"白濱亜嵐","desc":"俳優・EXILE","icon":"⭐"},{"name":"ジョセフ・コンラッド","desc":"小説家「闇の奥」","icon":"📖"},{"name":"ブレンダン・フレイザー","desc":"俳優","icon":"🎬"}],"12-4":[{"name":"ジェイ＝Z","desc":"ラッパー・実業家","icon":"🎤"},{"name":"桐島かれん","desc":"歌手・モデル","icon":"🎵"},{"name":"リリー・アレン","desc":"ポップ歌手","icon":"🎤"}],"12-5":[{"name":"ウォルト・ディズニー","desc":"ディズニー創業者","icon":"🐭"},{"name":"草彅剛（別日）","desc":"俳優","icon":"🎭"},{"name":"モーツァルト（命日）","desc":"音楽の天才","icon":"🎼"}],"12-6":[{"name":"聖ニコラス（サンタクロースのモデル）","desc":"キリスト教の聖人","icon":"🎅"},{"name":"デイヴ・ブルーベック","desc":"ジャズピアニスト","icon":"🎹"},{"name":"鈴木浩介","desc":"俳優","icon":"🎭"}],"12-7":[{"name":"真珠湾攻撃の日","desc":"1941年太平洋戦争の発端","icon":"⚠️"},{"name":"滝沢秀明（別日）","desc":"俳優","icon":"⭐"},{"name":"ジョン・ウォーカー","desc":"科学者","icon":"🔬"}],"12-8":[{"name":"ジョン・レノン（命日）","desc":"ビートルズのメンバー","icon":"🎸"},{"name":"澤穂希","desc":"元サッカー選手・なでしこジャパン","icon":"⚽"},{"name":"ジム・モリソン（別日）","desc":"ドアーズのボーカル","icon":"🎤"}],"12-9":[{"name":"ジャーデン・スミス","desc":"俳優・ラッパー","icon":"🎤"},{"name":"森内俊之","desc":"将棋棋士","icon":"♟️"},{"name":"ジョン・ミルトン","desc":"詩人「失楽園」","icon":"📖"}],"12-10":[{"name":"ノーベル賞授賞式","desc":"アルフレッド・ノーベルの命日","icon":"🏆"},{"name":"三浦知良","desc":"プロサッカー選手","icon":"⚽"},{"name":"エミリー・ディキンソン","desc":"詩人","icon":"📖"}],"12-11":[{"name":"矢部浩之","desc":"タレント・ナインティナイン","icon":"😄"},{"name":"ニキ・ラウダ","desc":"F1ドライバー","icon":"🏎️"},{"name":"ヘクトル・ベルリオーズ（別日）","desc":"作曲家","icon":"🎼"}],"12-12":[{"name":"フランク・シナトラ","desc":"歌手・俳優","icon":"🎤"},{"name":"市川海老蔵","desc":"歌舞伎俳優","icon":"🎭"},{"name":"エドワード・G・ロビンソン","desc":"俳優","icon":"🎬"}],"12-13":[{"name":"テイラー・スウィフト","desc":"シンガーソングライター","icon":"🎸"},{"name":"西村まさ彦","desc":"俳優","icon":"🎭"},{"name":"ジェニファー・シップス","desc":"女優","icon":"🎬"}],"12-14":[{"name":"谷村新司","desc":"シンガーソングライター","icon":"🎵"},{"name":"ヴァネッサ・ハジェンズ","desc":"女優・歌手","icon":"🎤"},{"name":"タイコ・ブラーエ","desc":"天文学者","icon":"🔭"}],"12-15":[{"name":"ドン・ジョンソン","desc":"俳優","icon":"🎬"},{"name":"松田聖子（別日）","desc":"歌手","icon":"🎵"},{"name":"レンブラント（別日）","desc":"バロック絵画の巨匠","icon":"🎨"}],"12-16":[{"name":"ルートヴィヒ・ファン・ベートーベン","desc":"音楽の巨人","icon":"🎼"},{"name":"ジェーン・オースティン","desc":"小説家「高慢と偏見」","icon":"📖"},{"name":"堀内孝雄","desc":"シンガーソングライター","icon":"🎵"}],"12-17":[{"name":"初飛行記念日","desc":"1903年ライト兄弟の初飛行","icon":"✈️"},{"name":"加藤成亮（KAT-TUN）","desc":"アーティスト","icon":"⭐"},{"name":"ビリー・ブラッグ","desc":"フォーク歌手","icon":"🎸"}],"12-18":[{"name":"スティーヴン・スピルバーグ","desc":"映画監督","icon":"🎬"},{"name":"クリスティーナ・アギレラ","desc":"ポップ歌手","icon":"🎤"},{"name":"石川さゆり","desc":"演歌歌手","icon":"🎵"}],"12-19":[{"name":"蒼井優","desc":"女優","icon":"🎭"},{"name":"ジャコブ・グリム","desc":"グリム童話の収集者","icon":"📚"},{"name":"エミリー・ブロンテ（別日）","desc":"小説家「嵐が丘」","icon":"📖"}],"12-20":[{"name":"山田優","desc":"モデル・女優","icon":"💄"},{"name":"エロール・フリン","desc":"俳優","icon":"🎬"},{"name":"ブラッド・ピット（別日）","desc":"俳優","icon":"🎬"}],"12-21":[{"name":"冬至","desc":"一年で最も昼が短い日","icon":"❄️"},{"name":"田中慎弥","desc":"小説家","icon":"📖"},{"name":"ジョセフ・スターリン（別日）","desc":"ソ連の指導者","icon":"🏛️"}],"12-22":[{"name":"レイフ・ファインズ","desc":"俳優「ヴォルデモート」","icon":"🎬"},{"name":"大友花恋","desc":"女優","icon":"🎭"},{"name":"ジャン＝バティスト・ポワント","desc":"フランスの軍人","icon":"⚔️"}],"12-23":[{"name":"上皇誕生日","desc":"上皇明仁天皇","icon":"🎌"},{"name":"ハンフリー・ボガート","desc":"俳優「カサブランカ」","icon":"🎬"},{"name":"碧山亘右","desc":"大相撲力士","icon":"🏆"}],"12-24":[{"name":"クリスマス・イブ","desc":"キリスト降誕前夜","icon":"🎄"},{"name":"ハワード・ヒューズ","desc":"航空王・映画プロデューサー","icon":"✈️"},{"name":"鈴木亮平","desc":"俳優","icon":"🎭"}],"12-25":[{"name":"クリスマス","desc":"イエス・キリストの誕生日","icon":"🎅"},{"name":"アイザック・ニュートン","desc":"万有引力の発見者","icon":"🍎"},{"name":"今野浩喜","desc":"俳優・お笑い芸人","icon":"😄"}],"12-26":[{"name":"毛沢東","desc":"中国共産党創始者","icon":"🏛️"},{"name":"竹内結子","desc":"女優","icon":"🎭"},{"name":"ヘンリー・ミラー","desc":"小説家","icon":"📖"}],"12-27":[{"name":"ルイ・パスツール","desc":"細菌学者・ワクチンの父","icon":"🔬"},{"name":"優香","desc":"タレント","icon":"😄"},{"name":"マルレーネ・ディートリッヒ（別日）","desc":"女優","icon":"🎬"}],"12-28":[{"name":"ウッドロウ・ウィルソン","desc":"第28代アメリカ大統領","icon":"🏛️"},{"name":"松本清張","desc":"推理作家","icon":"🔍"},{"name":"ジョン・ヴォイト","desc":"俳優","icon":"🎬"}],"12-29":[{"name":"ジュード・ロウ","desc":"俳優","icon":"🎬"},{"name":"中村雅俊","desc":"俳優・歌手","icon":"🎭"},{"name":"チャールズ・グッドイヤー","desc":"ゴムの発明者","icon":"🔧"}],"12-30":[{"name":"タイガー・ウッズ","desc":"プロゴルファー","icon":"⛳"},{"name":"松岡昌宏","desc":"俳優・TOKIO","icon":"🎸"},{"name":"ラドヤード・キップリング","desc":"小説家「ジャングル・ブック」","icon":"📖"}],"12-31":[{"name":"大晦日","desc":"一年の最後の日","icon":"🎊"},{"name":"松田優作","desc":"俳優","icon":"🎭"},{"name":"アンリ・マティス（別日）","desc":"フォービズムの画家","icon":"🎨"}]};
+function doSparkle(){var c=document.getElementById('sparkles');c.style.display='block';for(var i=0;i<28;i++){var s=document.createElement('div');s.className='sparkle';s.style.left=(25+Math.random()*50)+'%';s.style.top=(25+Math.random()*50)+'%';var ang=Math.random()*Math.PI*2,dist=80+Math.random()*120;s.style.setProperty('--dx',Math.cos(ang)*dist+'px');s.style.setProperty('--dy',Math.sin(ang)*dist+'px');s.style.animationDelay=Math.random()*0.3+'s';var sz=(2+Math.random()*4)+'px';s.style.width=sz;s.style.height=sz;c.appendChild(s);}setTimeout(function(){c.style.display='none';c.innerHTML='';},1800);}
+function getDivisors(n){var d=[],i;for(i=1;i*i<=n;i++){if(n%i===0){d.push(i);if(i!==n/i)d.push(n/i);}}return d.sort(function(a,b){return a-b;});}
+function factorStr(n){var f={},d=2,orig=n;while(d*d<=n){while(n%d===0){f[d]=(f[d]||0)+1;n=Math.floor(n/d);}d++;}if(n>1)f[n]=(f[n]||0)+1;return orig.toLocaleString()+' = '+Object.keys(f).map(function(p){return f[p]>1?p+'^'+f[p]:p;}).join(' × ');}
+function calcAge(year,mmdd){var today=new Date();today.setHours(0,0,0,0);var s=String(mmdd).padStart(4,'0');var m=parseInt(s.slice(0,2)),d=parseInt(s.slice(2,4));var age=today.getFullYear()-year;if(today<new Date(today.getFullYear(),m-1,d))age--;return age;}
+function isValidDate(mmdd){var s=String(mmdd).padStart(4,'0');var m=parseInt(s.slice(0,2)),d=parseInt(s.slice(2,4));if(m<1||m>12||d<1)return false;return d<=[31,29,31,30,31,30,31,31,30,31,30,31][m-1];}
+function fmtDate(mmdd){var s=String(mmdd).padStart(4,'0');return parseInt(s.slice(0,2))+'月'+parseInt(s.slice(2,4))+'日';}
+function weekday(year,mmdd){var s=String(mmdd).padStart(4,'0');var dt=new Date(year,parseInt(s.slice(0,2))-1,parseInt(s.slice(2,4)));return['日','月','火','水','木','金','土'][dt.getDay()]+'曜日';}
+function daysLived(year,mmdd){var s=String(mmdd).padStart(4,'0');var b=new Date(year,parseInt(s.slice(0,2))-1,parseInt(s.slice(2,4)));var t=new Date();t.setHours(0,0,0,0);return Math.floor((t-b)/86400000).toLocaleString();}
+function zodiac(mmdd){var s=String(mmdd).padStart(4,'0');var m=parseInt(s.slice(0,2)),d=parseInt(s.slice(2,4));var z=[{n:'山羊座',sym:'♑',em:1,ed:19},{n:'水瓶座',sym:'♒',em:2,ed:18},{n:'魚座',sym:'♓',em:3,ed:20},{n:'牡羊座',sym:'♈',em:4,ed:19},{n:'牡牛座',sym:'♉',em:5,ed:20},{n:'双子座',sym:'♊',em:6,ed:21},{n:'蟹座',sym:'♋',em:7,ed:22},{n:'獅子座',sym:'♌',em:8,ed:22},{n:'乙女座',sym:'♍',em:9,ed:22},{n:'天秤座',sym:'♎',em:10,ed:23},{n:'蠍座',sym:'♏',em:11,ed:22},{n:'射手座',sym:'♐',em:12,ed:21},{n:'山羊座',sym:'♑',em:12,ed:31}];for(var i=0;i<z.length;i++){if(m<z[i].em||(m===z[i].em&&d<=z[i].ed))return z[i];}return z[0];}
+function getFamous(mmdd){var s=String(mmdd).padStart(4,'0');var m=parseInt(s.slice(0,2)),d=parseInt(s.slice(2,4));return FAMOUS[m+'-'+d]||null;}
+function solveBirthday(n){var res=[],divs=getDivisors(n);function check(yr,md){var _now=new Date().getFullYear();if(yr>=(_now-100)&&yr<=_now&&md>=101&&md<=1231&&isValidDate(md)){var age=calcAge(yr,md);if(age>=0&&age<=100&&!res.find(function(r){return r.year===yr&&r.mmdd===md;}))res.push({year:yr,mmdd:md,age:age});}}for(var i=0;i<divs.length;i++){check(divs[i],n/divs[i]);check(n/divs[i],divs[i]);}return res;}
+function revealBirthday(){
+  var area=document.getElementById('bres');
+  area.className='rarea';area.innerHTML='';
+  var v=document.getElementById('binput').value.trim();
+  if(!v||isNaN(v)){area.innerHTML='<div class="errmsg">数字を入力してください</div>';area.className='rarea show';return;}
+  var n=parseInt(v);
+  if(n<10000||n>99999999){area.innerHTML='<div class="errmsg">数値の範囲を確認してください</div>';area.className='rarea show';return;}
+  var cands=solveBirthday(n);
+  if(cands.length===0){area.innerHTML='<div class="nores">該当する誕生日が見つかりませんでした</div>';area.className='rarea show';return;}
+  doSparkle();
+  var html='';
+  if(cands.length>1)html='<div class="rcount">✦ '+cands.length+' パターン見つかりました ✦</div>';
+  cands.forEach(function(c,i){
+    var z=zodiac(c.mmdd);
+    var lbl=cands.length>1?'<div class="cnum">候補 '+(i+1)+' / '+cands.length+'</div>':'';
+    var famous=getFamous(c.mmdd);
+    var famHtml='';
+    if(famous){
+      famHtml='<div class="famous-block"><div class="famous-title">✦ 同じ誕生日の有名人 ✦</div><div class="famous-list">';
+      famous.forEach(function(p){famHtml+='<div class="famous-item"><div class="famous-icon">'+p.icon+'</div><div><div class="famous-name">'+p.name+'</div><div class="famous-desc">'+p.desc+'</div></div></div>';});
+      famHtml+='</div></div>';
+    }
+    html+='<div class="bcard">'+lbl+
+      '<div class="crow"><span class="cl">生まれた年</span><span class="cv big">'+c.year+'年</span></div>'+
+      '<div class="crow"><span class="cl">誕生日</span><span class="cv big">'+fmtDate(c.mmdd)+'</span></div>'+
+      '<div class="crow"><span class="cl">年齢</span><span class="cv big">'+c.age+'歳</span></div>'+
+      '<div class="egrid">'+
+        '<div class="ecell"><span class="cl">誕生曜日</span><div class="cv">'+weekday(c.year,c.mmdd)+'</div></div>'+
+        '<div class="ecell"><span class="cl">生まれてから</span><div class="cv dnum">'+daysLived(c.year,c.mmdd)+'</div><div class="csub">日</div></div>'+
+        '<div class="ecell"><span class="cl">星座</span><span class="cv zsym">'+z.sym+'</span><div class="cv" style="font-size:.8rem">'+z.n+'</div></div>'+
+      '</div>'+''+'</div>';
+  });
+  
+  html+='<button class="rstbtn" onclick="doReset()">✦ もう一度 ✦</button>';
+  area.innerHTML=html;
+  requestAnimationFrame(function(){area.className='rarea show';});
+  area.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function doReset(){document.getElementById('binput').value='';var a=document.getElementById('bres');a.className='rarea';a.innerHTML='';document.getElementById('binput').focus();}
+document.getElementById('binput').addEventListener('keydown',function(e){if(e.key==='Enter')revealBirthday();});
+</script>
+
+<script>
+// ── PWA manifest ──
+var manifest = {
+  name: "Birthday Oracle",
+  short_name: "誕生日あて",
+  description: "誕生日解読の魔術",
+  start_url: ".",
+  display: "standalone",
+  background_color: "#0a0800",
+  theme_color: "#0a0800",
+  orientation: "portrait",
+  icons: [
+    { src: buildIcon(192), sizes: "192x192", type: "image/png" },
+    { src: buildIcon(512), sizes: "512x512", type: "image/png" }
+  ]
+};
+
+function buildIcon(size) {
+  var c = document.createElement('canvas');
+  c.width = c.height = size;
+  var ctx = c.getContext('2d');
+  // 背景
+  ctx.fillStyle = '#0a0800';
+  ctx.fillRect(0, 0, size, size);
+  // 外枠円
+  ctx.strokeStyle = '#d4a843';
+  ctx.lineWidth = size * 0.04;
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size*0.42, 0, Math.PI*2);
+  ctx.stroke();
+  // 目の白目
+  ctx.fillStyle = '#1a1402';
+  ctx.beginPath();
+  ctx.ellipse(size/2, size/2, size*0.32, size*0.18, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = '#d4a843';
+  ctx.lineWidth = size * 0.025;
+  ctx.stroke();
+  // 瞳
+  ctx.fillStyle = '#d4a843';
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size*0.1, 0, Math.PI*2);
+  ctx.fill();
+  // 中心
+  ctx.fillStyle = '#0a0400';
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size*0.04, 0, Math.PI*2);
+  ctx.fill();
+  return c.toDataURL('image/png');
+}
+
+window.addEventListener('load', function() {
+  // icon
+  var iconUrl = buildIcon(192);
+  document.getElementById('pwa-icon').href = iconUrl;
+  // manifest with icon dataURL
+  manifest.icons = [
+    { src: buildIcon(192), sizes: "192x192", type: "image/png" },
+    { src: buildIcon(512), sizes: "512x512", type: "image/png" }
+  ];
+  var blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+});
+
+// Service Worker登録（オフライン対応）
+if('serviceWorker' in navigator) {
+  var swCode = `
+self.addEventListener('install', function(e) {
+  e.waitUntil(
+    caches.open('birthday-oracle-v1').then(function(cache) {
+      return cache.addAll([location.pathname]);
+    })
+  );
+});
+self.addEventListener('fetch', function(e) {
+  e.respondWith(
+    caches.match(e.request).then(function(r) {
+      return r || fetch(e.request);
+    })
+  );
+});
+  `;
+  var swBlob = new Blob([swCode], {type:'text/javascript'});
+  var swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).then(function() {
+    console.log('SW registered');
+  });
+}
+</script>
+</body>
+</html>
